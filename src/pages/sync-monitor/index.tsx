@@ -10,8 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { capitalize } from "@/lib/capitalize"
-import { CloudSync } from "lucide-react"
 import Filter from "./filter"
+import { Outlet, useParams, useNavigate } from "@tanstack/react-router"
 
 export type Time = {
   date: string
@@ -96,6 +96,12 @@ const STATUS_CONFIG = {
 } as const
 
 export default function SyncMonitor() {
+  const navigate = useNavigate()
+  const params = useParams({ strict: false })
+
+  if (params.location) {
+    return <Outlet />
+  }
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">
@@ -174,7 +180,17 @@ export default function SyncMonitor() {
                               Retry
                             </Button>
                           </div>
-                          <Button variant={"outline"}>View</Button>
+                          <Button
+                            variant={"outline"}
+                            onClick={() =>
+                              navigate({
+                                to: `/sync-monitor/${id}-${location}`,
+                                replace: true,
+                              })
+                            }
+                          >
+                            View
+                          </Button>
                         </div>
                       </div>
                     </TableCell>

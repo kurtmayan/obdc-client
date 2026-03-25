@@ -9,9 +9,10 @@ import AuthLayout from "./layouts/auth-layout"
 import AppLayout from "./layouts/app-layout"
 
 import ErrorPage from "./pages/error-page"
-import SyncMonitor from "./pages/sync-monitor"
-import Overview from "./pages/overview"
 import LoginPage from "./pages/login"
+import Overview from "./pages/overview"
+import SyncMonitor from "./pages/sync-monitor"
+import SyncMonitorLocation from "./pages/sync-monitor/[location]"
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -38,6 +39,13 @@ const syncMonitorRoute = createRoute({
   errorComponent: ErrorPage,
 })
 
+const syncMonitorLocationRoute = createRoute({
+  getParentRoute: () => syncMonitorRoute,
+  path: "$location",
+  component: SyncMonitorLocation,
+  errorComponent: ErrorPage,
+})
+
 const authRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "auth",
@@ -53,7 +61,10 @@ const loginRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   authRoute.addChildren([loginRoute]),
-  appRoute.addChildren([overviewRoute, syncMonitorRoute]),
+  appRoute.addChildren([
+    overviewRoute,
+    syncMonitorRoute.addChildren([syncMonitorLocationRoute]),
+  ]),
 ])
 
 export const router = createRouter({
