@@ -12,13 +12,15 @@ import Filter from "./filter"
 import StoreIcon from "@/components/icons/store-icon"
 import StatsInfo from "./stats-info"
 import CorrectIcon from "@/components/icons/correct-icon"
-import FailedIcon from "@/components/icons/correct-icon copy"
+import AlertIcon from "@/components/icons/alert-icon"
+import { STATUS_CONFIG } from "@/constant/status"
+import { format, formatDistanceToNow } from "date-fns"
 
 export type SyncType = {
   id: string
   location: string
   region: string
-  lastSync: string
+  lastSync: Date
   pending: number
   status: "synced" | "syncing" | "failed"
 }
@@ -28,16 +30,16 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
-    pending: 19,
+    lastSync: new Date("March 10 2024, 10:00 AM"),
+    pending: 0,
     status: "synced",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
-    pending: 14,
+    lastSync: new Date(),
+    pending: 0,
     status: "synced",
   },
 
@@ -45,7 +47,7 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     pending: 25,
     status: "failed",
   },
@@ -53,15 +55,15 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
-    pending: 34,
+    lastSync: new Date(),
+    pending: 0,
     status: "synced",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     pending: 28,
     status: "failed",
   },
@@ -69,28 +71,13 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     pending: 16,
     status: "syncing",
   },
 ]
 
 const dummyHeader = ["location", "region", "last sync", "pending", "status"]
-
-const STATUS_CONFIG = {
-  synced: {
-    label: "synced",
-    className: "bg-[#D4FDE7] text-green-700",
-  },
-  syncing: {
-    label: "syncing",
-    className: "bg-[#FFF4C2] text-[#9E3900]",
-  },
-  failed: {
-    label: "failed",
-    className: "bg-[#FFE1E2] text-[#A8000F]",
-  },
-} as const
 
 export default function Overview() {
   return (
@@ -119,7 +106,7 @@ export default function Overview() {
           title="Stores Unsynced"
           value="20"
           description="Number of stores pending or failed sync"
-          icon={<FailedIcon />}
+          icon={<AlertIcon />}
         />
       </div>
 
@@ -164,10 +151,10 @@ export default function Overview() {
                       <div className="grid place-items-center">
                         <div>
                           <p className="text-sm font-medium text-navy-blue">
-                            {lastSync}
+                            {format(lastSync, "MMMM d, h:mm a")}
                           </p>
                           <p className="text-xs font-normal text-[#8A96A3]">
-                            {lastSync}
+                            {formatDistanceToNow(lastSync, { addSuffix: true })}
                           </p>
                         </div>
                       </div>
@@ -180,7 +167,10 @@ export default function Overview() {
                     <TableCell>
                       <div className="grid place-items-center">
                         <div>
-                          <Badge className={statusConfig.className}>
+                          <Badge
+                            className={`flex items-center gap-1 ${statusConfig.className}`}
+                          >
+                            <statusConfig.icon />
                             {capitalize(statusConfig.label)}
                           </Badge>
                         </div>

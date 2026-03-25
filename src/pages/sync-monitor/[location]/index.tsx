@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { capitalize } from "@/lib/capitalize"
-import Filter from "../filter"
 import { format } from "date-fns"
 import {
   Breadcrumb,
@@ -18,7 +17,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Link } from "@tanstack/react-router"
+import { STATUS_CONFIG } from "@/constant/status"
 
 export type SyncType = {
   id: string
@@ -36,7 +35,7 @@ const dummyData: SyncType[] = [
     logDate: new Date(),
     totalRecord: 12,
     synced: 30,
-    pending: 12,
+    pending: 0,
     lastSync: new Date(),
     status: "synced",
   },
@@ -45,7 +44,7 @@ const dummyData: SyncType[] = [
     logDate: new Date(),
     totalRecord: 12,
     synced: 30,
-    pending: 12,
+    pending: 0,
     lastSync: new Date(),
     status: "synced",
   },
@@ -54,7 +53,7 @@ const dummyData: SyncType[] = [
     logDate: new Date(),
     totalRecord: 12,
     synced: 30,
-    pending: 12,
+    pending: 0,
     lastSync: new Date(),
     status: "synced",
   },
@@ -63,7 +62,7 @@ const dummyData: SyncType[] = [
     logDate: new Date(),
     totalRecord: 12,
     synced: 30,
-    pending: 12,
+    pending: 0,
     lastSync: new Date(),
     status: "synced",
   },
@@ -72,7 +71,7 @@ const dummyData: SyncType[] = [
     logDate: new Date(),
     totalRecord: 12,
     synced: 30,
-    pending: 12,
+    pending: 0,
     lastSync: new Date(),
     status: "synced",
   },
@@ -87,21 +86,6 @@ const dummyHeader = [
   "status",
   "action",
 ]
-
-const STATUS_CONFIG = {
-  synced: {
-    label: "synced",
-    className: "bg-[#D4FDE7] text-green-700 text-xs",
-  },
-  syncing: {
-    label: "syncing",
-    className: "bg-[#FFF4C2] text-[#9E3900] text-xs",
-  },
-  failed: {
-    label: "failed",
-    className: "bg-[#FFE1E2] text-[#A8000F] text-xs",
-  },
-} as const
 
 export default function SyncMonitorLocation() {
   return (
@@ -192,7 +176,10 @@ export default function SyncMonitorLocation() {
                     <TableCell>
                       <div className="grid place-items-center">
                         <div>
-                          <Badge className={statusConfig.className}>
+                          <Badge
+                            className={`flex items-center gap-1 ${statusConfig.className}`}
+                          >
+                            <statusConfig.icon />
                             {capitalize(statusConfig.label)}
                           </Badge>
                         </div>

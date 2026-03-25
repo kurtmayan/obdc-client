@@ -11,7 +11,7 @@ export default function LoginPage() {
         <p className="mx-auto mb-3 w-[50%] text-xl font-bold text-[#5A2E15]">
           Biometrics Data Consolidator
         </p>
-        <p className="text-[#8A96A3]">Sign in to L-BDC Portal</p>
+        <p className="text-[#8A96A3]">Sign in to O-BDC Portal</p>
       </div>
       <div className="grid gap-6">
         <Field>

@@ -1,6 +1,6 @@
 import type { SVGProps } from "react"
 
-export default function FailedIcon(props: SVGProps<SVGSVGElement>) {
+export default function AlertIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       width={props.width || "20"}

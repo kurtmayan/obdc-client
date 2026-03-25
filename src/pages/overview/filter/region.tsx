@@ -27,7 +27,6 @@ export default function Region() {
             <SelectItem value="ncr">NCR</SelectItem>
             <SelectItem value="north-luzon">North Luzon</SelectItem>
             <SelectItem value="visayas">Visayas</SelectItem>
-            <SelectItem value="ncr">NCR</SelectItem>
             <SelectItem value="region-iii">Region II</SelectItem>
           </SelectGroup>
         </SelectContent>

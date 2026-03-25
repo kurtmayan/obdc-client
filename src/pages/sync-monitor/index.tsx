@@ -12,23 +12,14 @@ import {
 import { capitalize } from "@/lib/capitalize"
 import Filter from "./filter"
 import { Outlet, useParams, useNavigate } from "@tanstack/react-router"
-
-export type Time = {
-  date: string
-  time: string
-}
-
-export type Logs = {
-  name: string
-  timeIn: Time
-  timeOut: Time
-}
+import { STATUS_CONFIG } from "@/constant/status"
+import { format, formatDistanceToNow } from "date-fns"
 
 export type SyncType = {
   id: string
   location: string
   region: string
-  lastSync: string
+  lastSync: Date
   status: "synced" | "syncing" | "failed"
 }
 
@@ -37,14 +28,14 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "synced",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "synced",
   },
 
@@ -52,48 +43,33 @@ const dummyData: SyncType[] = [
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "failed",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "synced",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "failed",
   },
   {
     id: "ID: DIY-STM-004",
     location: "Manila",
     region: "NCR",
-    lastSync: "March 10, 8:00 AM",
+    lastSync: new Date(),
     status: "syncing",
   },
 ]
 
 const dummyHeader = ["location", "region", "last sync", "status", "action"]
-
-const STATUS_CONFIG = {
-  synced: {
-    label: "synced",
-    className: "bg-[#D4FDE7] text-green-700",
-  },
-  syncing: {
-    label: "syncing",
-    className: "bg-[#FFF4C2] text-[#9E3900]",
-  },
-  failed: {
-    label: "failed",
-    className: "bg-[#FFE1E2] text-[#A8000F]",
-  },
-} as const
 
 export default function SyncMonitor() {
   const navigate = useNavigate()
@@ -154,10 +130,10 @@ export default function SyncMonitor() {
                       <div className="grid place-items-center">
                         <div>
                           <p className="text-sm font-medium text-navy-blue">
-                            {lastSync}
+                            {format(lastSync, "MMMM d, h:mm a")}
                           </p>
                           <p className="text-xs font-normal text-[#8A96A3]">
-                            {lastSync}
+                            {formatDistanceToNow(lastSync, { addSuffix: true })}
                           </p>
                         </div>
                       </div>
@@ -165,7 +141,10 @@ export default function SyncMonitor() {
                     <TableCell>
                       <div className="grid place-items-center">
                         <div>
-                          <Badge className={statusConfig.className}>
+                          <Badge
+                            className={`flex items-center gap-1 ${statusConfig.className}`}
+                          >
+                            <statusConfig.icon />
                             {capitalize(statusConfig.label)}
                           </Badge>
                         </div>
