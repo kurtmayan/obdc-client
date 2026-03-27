@@ -14,6 +14,7 @@ import Filter from "./filter"
 import { Outlet, useParams, useNavigate } from "@tanstack/react-router"
 import { STATUS_CONFIG } from "@/constant/status"
 import { format, formatDistanceToNow } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
 
 export type SyncType = {
   id: string
@@ -69,11 +70,44 @@ const dummyData: SyncType[] = [
   },
 ]
 
+export interface AttendanceRecord {
+  name: string
+  user_id: string
+  timeIn: string // ISO date string
+  timeOut: string // ISO date string
+}
+
+export interface StoreLocation {
+  storeName: string
+  region: string
+}
+
+export interface StoreAttendance {
+  deviceId: string
+  storeLoc: StoreLocation
+  lastSync: string // ISO date string
+  status: "synced" | "pending" | "failed" // extend if needed
+  attendance: AttendanceRecord[]
+}
+
 const dummyHeader = ["location", "region", "last sync", "status", "action"]
 
 export default function SyncMonitor() {
   const navigate = useNavigate()
   const params = useParams({ strict: false })
+  const { data, isLoading, isError } = useQuery<StoreAttendance[]>({
+    queryKey: ["sync-data"],
+    queryFn: async () => {
+      const data = await fetch("http://localhost:3000/attendance/all")
+      return await data.json()
+    },
+  })
+
+  console.log(data)
+
+  if (isLoading) return <p>Loading....</p>
+  if (isError) throw new Error()
+  if (!data) throw new Error()
 
   if (params.location) {
     return <Outlet />
@@ -108,7 +142,76 @@ export default function SyncMonitor() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData.map(
+            {data.map(
+              ({ attendance, lastSync, status, storeLoc, deviceId }, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell className="items-center gap-2">
+                      <p className="text-sm font-semibold text-navy-blue">
+                        {storeLoc.storeName}
+                      </p>
+                      <p className="text-xs font-normal text-[#8A96A3]">
+                        {deviceId}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <p className="text-sm font-medium text-navy-blue">
+                          {storeLoc.region}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <div>
+                          <p className="text-sm font-medium text-navy-blue">
+                            {format(lastSync, "MMMM d, h:mm a")}
+                          </p>
+                          <p className="text-xs font-normal text-[#8A96A3]">
+                            {formatDistanceToNow(lastSync, { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <div>
+                          <Badge
+                            className={`flex items-center gap-1 bg-green-400 text-white`}
+                          >
+                            {capitalize(status)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <div className="flex flex-row">
+                          <div>
+                            <Button variant={"outline"}>
+                              <SyncIcon height={6} width={6} />
+                              Retry
+                            </Button>
+                          </div>
+                          <Button
+                            variant={"outline"}
+                            onClick={() =>
+                              navigate({
+                                to: `/sync-monitor/${deviceId}-${location}`,
+                                replace: true,
+                              })
+                            }
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              }
+            )}
+            {/* {dummyData.map(
               ({ id, location, region, lastSync, status }, index) => {
                 const statusConfig = STATUS_CONFIG[status]
                 return (
@@ -176,7 +279,7 @@ export default function SyncMonitor() {
                   </TableRow>
                 )
               }
-            )}
+            )} */}
           </TableBody>
         </Table>
       </div>
