@@ -15,6 +15,8 @@ import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { STATUS_CONFIG } from "@/constant/status"
 import { format, formatDistanceToNow } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
+import type { StoreAttendance } from "../sync-monitor"
 
 export type SyncType = {
   id: string
@@ -80,6 +82,20 @@ const dummyData: SyncType[] = [
 const dummyHeader = ["location", "region", "last sync", "pending", "status"]
 
 export default function Overview() {
+  const { data, isLoading, isError } = useQuery<StoreAttendance[]>({
+    queryKey: ["sync-data"],
+    queryFn: async () => {
+      const data = await fetch("http://localhost:3000/attendance/all")
+      return await data.json()
+    },
+  })
+
+  if (isLoading) return <p>Loading....</p>
+  if (isError) throw new Error()
+  if (!data) throw new Error()
+
+  console.log(data)
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">
@@ -129,7 +145,61 @@ export default function Overview() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData.map(
+            {data.map(
+              ({ attendance, deviceId, lastSync, status, storeLoc }, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell className="items-center gap-2">
+                      <p className="text-sm font-semibold text-navy-blue">
+                        {storeLoc.storeName}
+                      </p>
+                      <p className="text-xs font-normal text-[#8A96A3]">
+                        {deviceId}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <p className="text-sm font-medium text-navy-blue">
+                          {storeLoc.region}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <div>
+                          <p className="text-sm font-medium text-navy-blue">
+                            {format(lastSync, "MMMM d, h:mm a")}
+                          </p>
+                          <p className="text-xs font-normal text-[#8A96A3]">
+                            {formatDistanceToNow(lastSync, { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        {/* <div>{pending}</div> */}
+                        <div>0</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <div>
+                          <Badge
+                            className={`flex items-center gap-1 bg-green-400 text-white`}
+                          >
+                            {/* <statusConfig.icon /> */}
+                            {/* {capitalize(statusConfig.label)} */}
+                            {status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              }
+            )}
+            {/* {dummyData.map(
               ({ id, location, region, lastSync, pending, status }, index) => {
                 const statusConfig = STATUS_CONFIG[status]
                 return (
@@ -179,7 +249,7 @@ export default function Overview() {
                   </TableRow>
                 )
               }
-            )}
+            )} */}
           </TableBody>
         </Table>
       </div>

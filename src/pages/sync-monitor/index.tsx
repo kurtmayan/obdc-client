@@ -197,7 +197,7 @@ export default function SyncMonitor() {
                             variant={"outline"}
                             onClick={() =>
                               navigate({
-                                to: `/sync-monitor/${deviceId}-${location}`,
+                                to: `/sync-monitor/${storeLoc.storeName}`,
                                 replace: true,
                               })
                             }
@@ -211,75 +211,6 @@ export default function SyncMonitor() {
                 )
               }
             )}
-            {/* {dummyData.map(
-              ({ id, location, region, lastSync, status }, index) => {
-                const statusConfig = STATUS_CONFIG[status]
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="items-center gap-2">
-                      <p className="text-sm font-semibold text-navy-blue">
-                        {location}
-                      </p>
-                      <p className="text-xs font-normal text-[#8A96A3]">{id}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <p className="text-sm font-medium text-navy-blue">
-                          {region}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <p className="text-sm font-medium text-navy-blue">
-                            {format(lastSync, "MMMM d, h:mm a")}
-                          </p>
-                          <p className="text-xs font-normal text-[#8A96A3]">
-                            {formatDistanceToNow(lastSync, { addSuffix: true })}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <Badge
-                            className={`flex items-center gap-1 ${statusConfig.className}`}
-                          >
-                            <statusConfig.icon />
-                            {capitalize(statusConfig.label)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div className="flex flex-row">
-                          <div>
-                            <Button variant={"outline"}>
-                              <SyncIcon height={6} width={6} />
-                              Retry
-                            </Button>
-                          </div>
-                          <Button
-                            variant={"outline"}
-                            onClick={() =>
-                              navigate({
-                                to: `/sync-monitor/${id}-${location}`,
-                                replace: true,
-                              })
-                            }
-                          >
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              }
-            )} */}
           </TableBody>
         </Table>
       </div>
