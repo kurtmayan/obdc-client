@@ -199,6 +199,7 @@ export default function SyncMonitor() {
                               navigate({
                                 to: `/sync-monitor/${storeLoc.storeName}`,
                                 replace: true,
+                                state: attendance as any,
                               })
                             }
                           >

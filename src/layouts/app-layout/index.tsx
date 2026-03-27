@@ -12,7 +12,7 @@ export default function AppLayout() {
   const { pathname } = useLocation()
 
   return (
-    <div className="flex h-256 max-h-256 w-360 max-w-360 flex-row">
+    <div className="flex h-256 max-h-256 flex-row">
       <div className="w-65 bg-navy-blue">
         <div className="flex flex-col gap-3 px-3 py-6">
           {navLinks.map(({ url, label, icon }) => {
