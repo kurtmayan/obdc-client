@@ -5,7 +5,7 @@ import { Link, Outlet, useLocation } from "react-router"
 
 export default function AppLayout() {
   const navLinks = [
-    { label: "Overview", url: "/", icon: OverviewIcon },
+    { label: "Dashboard", url: "/", icon: OverviewIcon },
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
   ]
 

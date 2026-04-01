@@ -2,12 +2,13 @@ import { createBrowserRouter } from "react-router"
 import AuthLayout from "./layouts/auth-layout"
 import LoginPage from "./pages/login"
 import AppLayout from "./layouts/app-layout"
-import Overview from "./pages/overview"
 import SyncMonitor from "./pages/sync-monitor"
 import RootLayout from "./layouts/root-layout"
 import Error from "./components/error"
 import ProtectedRoute from "./components/protected-route"
-import SyncMonitorLocation from "./pages/sync-monitor/[location]"
+import SyncMonitorStoreView from "./pages/sync-monitor/[store]"
+import Dashboard from "./pages/dashboard"
+import SyncMonitorDetailedView from "./pages/sync-monitor/[store]/[detailed]"
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +35,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 path: "",
-                Component: Overview,
+                Component: Dashboard,
                 ErrorBoundary: Error,
               },
               {
@@ -43,8 +44,13 @@ export const router = createBrowserRouter([
                 ErrorBoundary: Error,
               },
               {
-                path: "sync-monitor/:id",
-                Component: SyncMonitorLocation,
+                path: "sync-monitor/:store",
+                Component: SyncMonitorStoreView,
+                ErrorBoundary: Error,
+              },
+              {
+                path: "sync-monitor/:store/:detailed",
+                Component: SyncMonitorDetailedView,
                 ErrorBoundary: Error,
               },
             ],
