@@ -90,6 +90,8 @@ export default function Overview() {
     },
   })
 
+  console.log(data)
+
   if (isLoading) return <p>Loading....</p>
   if (isError) throw new Error()
   if (!data) throw new Error()
@@ -145,7 +147,7 @@ export default function Overview() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map(
+            {data?.map(
               ({ attendance, deviceId, lastSync, status, storeLoc }, index) => {
                 return (
                   <TableRow key={index}>
@@ -178,7 +180,6 @@ export default function Overview() {
                     </TableCell>
                     <TableCell>
                       <div className="grid place-items-center">
-                        {/* <div>{pending}</div> */}
                         <div>0</div>
                       </div>
                     </TableCell>
@@ -188,8 +189,6 @@ export default function Overview() {
                           <Badge
                             className={`flex items-center gap-1 bg-green-400 text-white`}
                           >
-                            {/* <statusConfig.icon /> */}
-                            {/* {capitalize(statusConfig.label)} */}
                             {status}
                           </Badge>
                         </div>

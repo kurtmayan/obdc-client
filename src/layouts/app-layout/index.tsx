@@ -1,7 +1,7 @@
 import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import { cn } from "@/lib/utils"
-import { Link, Outlet, useLocation } from "@tanstack/react-router"
+import { Link, Outlet, useLocation } from "react-router"
 
 export default function AppLayout() {
   const navLinks = [
@@ -12,7 +12,7 @@ export default function AppLayout() {
   const { pathname } = useLocation()
 
   return (
-    <div className="flex h-256 max-h-256 flex-row">
+    <div className="flex min-h-screen flex-row">
       <div className="w-65 bg-navy-blue">
         <div className="flex flex-col gap-3 px-3 py-6">
           {navLinks.map(({ url, label, icon }) => {

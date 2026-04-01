@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table"
 import { capitalize } from "@/lib/capitalize"
 import Filter from "./filter"
-import { Outlet, useParams, useNavigate } from "@tanstack/react-router"
+import { Outlet, useParams, useNavigate } from "react-router"
 import { STATUS_CONFIG } from "@/constant/status"
 import { format, formatDistanceToNow } from "date-fns"
 import { useQuery } from "@tanstack/react-query"
@@ -70,13 +70,6 @@ const dummyData: SyncType[] = [
   },
 ]
 
-export interface AttendanceRecord {
-  name: string
-  user_id: string
-  timeIn: string // ISO date string
-  timeOut: string // ISO date string
-}
-
 export interface StoreLocation {
   storeName: string
   region: string
@@ -90,20 +83,73 @@ export interface StoreAttendance {
   attendance: AttendanceRecord[]
 }
 
+export type LogType = "timeIn" | "timeOut" // extend if needed
+
+export interface AttendanceRecord {
+  id: string
+  employeeName: string
+  createdAt: string // ISO date
+  updatedAt: string // ISO date
+  logType: LogType
+  logDate: string // ISO date
+  storeSyncRecordID: string
+}
+
+export interface Device {
+  id: string
+  model: string
+  serialNumber: string
+  storesId: string
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+}
+
+export interface Store {
+  id: string
+  name: string
+  region: string
+  province: string
+  municipality: string
+  barangay: string
+  exactAddress: string
+  createdAt: string // ISO date string
+  updatedAt: string // ISO date string
+  contactInfo: string | null
+  devices: Device[]
+}
+
+export interface SyncRecord {
+  id: string
+  syncDate: string // ISO date string
+  storesId: string
+  attendanceRecord: AttendanceRecord[]
+  store: Store
+}
+
 const dummyHeader = ["location", "region", "last sync", "status", "action"]
 
 export default function SyncMonitor() {
   const navigate = useNavigate()
-  const params = useParams({ strict: false })
-  const { data, isLoading, isError } = useQuery<StoreAttendance[]>({
+  const params = useParams()
+  const { data, isLoading, isError } = useQuery<SyncRecord[]>({
     queryKey: ["sync-data"],
     queryFn: async () => {
       const data = await fetch("http://localhost:3000/attendance/all")
+      console.log(data)
       return await data.json()
     },
   })
 
   console.log(data)
+
+  const handleClick = (
+    syncId: string,
+    attendanceRecord: AttendanceRecord[]
+  ) => {
+    navigate(`/sync-monitor/${syncId}`, {
+      state: { data: attendanceRecord }, // 👈 pass the data here
+    })
+  }
 
   if (isLoading) return <p>Loading....</p>
   if (isError) throw new Error()
@@ -142,76 +188,75 @@ export default function SyncMonitor() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map(
-              ({ attendance, lastSync, status, storeLoc, deviceId }, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="items-center gap-2">
-                      <p className="text-sm font-semibold text-navy-blue">
-                        {storeLoc.storeName}
+            {data.map(({ syncDate, store, attendanceRecord, id }, index) => {
+              return (
+                <TableRow key={index}>
+                  <TableCell className="items-center gap-2">
+                    <p className="text-sm font-semibold text-navy-blue">
+                      {store.name}
+                    </p>
+                    <p className="text-xs font-normal text-[#8A96A3]">
+                      {store.devices[0].model} - {store.devices[0].serialNumber}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <div className="grid place-items-center">
+                      <p className="text-sm font-medium text-navy-blue">
+                        {store.region}
                       </p>
-                      <p className="text-xs font-normal text-[#8A96A3]">
-                        {deviceId}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="grid place-items-center">
+                      <div>
                         <p className="text-sm font-medium text-navy-blue">
-                          {storeLoc.region}
+                          {format(syncDate, "MMMM d, h:mm a")}
+                        </p>
+                        <p className="text-xs font-normal text-[#8A96A3]">
+                          {formatDistanceToNow(syncDate, { addSuffix: true })}
                         </p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <p className="text-sm font-medium text-navy-blue">
-                            {format(lastSync, "MMMM d, h:mm a")}
-                          </p>
-                          <p className="text-xs font-normal text-[#8A96A3]">
-                            {formatDistanceToNow(lastSync, { addSuffix: true })}
-                          </p>
-                        </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="grid place-items-center">
+                      <div>
+                        <Badge
+                          className={`flex items-center gap-1 bg-green-400 text-white`}
+                        >
+                          {capitalize(status)}
+                        </Badge>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="grid place-items-center">
+                      <div className="flex flex-row">
                         <div>
-                          <Badge
-                            className={`flex items-center gap-1 bg-green-400 text-white`}
-                          >
-                            {capitalize(status)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div className="flex flex-row">
-                          <div>
-                            <Button variant={"outline"}>
-                              <SyncIcon height={6} width={6} />
-                              Retry
-                            </Button>
-                          </div>
-                          <Button
-                            variant={"outline"}
-                            onClick={() =>
-                              navigate({
-                                to: `/sync-monitor/${storeLoc.storeName}`,
-                                replace: true,
-                                state: attendance as any,
-                              })
-                            }
-                          >
-                            View
+                          <Button variant={"outline"}>
+                            <SyncIcon height={6} width={6} />
+                            Retry
                           </Button>
                         </div>
+                        <Button
+                          variant={"outline"}
+                          onClick={() => handleClick(id, attendanceRecord)}
+                          // onClick={() =>
+                          // navigate({
+                          //   to: `/sync-monitor/${storeLoc.storeName}`,
+                          //   replace: true,
+                          //   state: attendance as any,
+                          // })
+                          // }
+                        >
+                          View
+                        </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              }
-            )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
