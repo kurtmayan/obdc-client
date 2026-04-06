@@ -17,67 +17,22 @@ import {
 import { Button } from "@/components/ui/button"
 import EyeIcon from "@/components/icons/eye-icon"
 import { formatDate } from "date-fns"
-import { useNavigate } from "react-router"
+import { useNavigate, useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
+import { Badge } from "@/components/ui/badge"
+import { capitalize } from "@/lib/capitalize"
+import type { Store } from ".."
 
-export type SyncType = {
+export type SyncLog = {
   id: string
   logDate: Date
-  totalRecord: number
-  synced: number
-  pending: number
   lastSync: Date
-  status: "synced" | "syncing" | "failed"
+  status: string
+  pending: number
+  totalRecord: number
 }
 
-const dummyData: SyncType[] = [
-  {
-    id: "sync-001",
-    logDate: new Date("2026-04-12T08:00:00Z"),
-    totalRecord: 120,
-    synced: 120,
-    pending: 0,
-    lastSync: new Date("2026-04-01T08:30:00Z"),
-    status: "synced",
-  },
-  {
-    id: "sync-002",
-    logDate: new Date("2026-04-01T09:00:00Z"),
-    totalRecord: 85,
-    synced: 50,
-    pending: 35,
-    lastSync: new Date("2026-04-01T09:20:00Z"),
-    status: "syncing",
-  },
-  {
-    id: "sync-003",
-    logDate: new Date("2026-04-01T10:00:00Z"),
-    totalRecord: 200,
-    synced: 180,
-    pending: 20,
-    lastSync: new Date("2026-04-01T10:25:00Z"),
-    status: "failed",
-  },
-  {
-    id: "sync-004",
-    logDate: new Date("2026-04-01T11:00:00Z"),
-    totalRecord: 150,
-    synced: 150,
-    pending: 0,
-    lastSync: new Date("2026-04-01T11:15:00Z"),
-    status: "synced",
-  },
-  {
-    id: "sync-005",
-    logDate: new Date("2026-04-01T12:00:00Z"),
-    totalRecord: 90,
-    synced: 45,
-    pending: 45,
-    lastSync: new Date("2026-04-01T12:10:00Z"),
-    status: "syncing",
-  },
-]
-
-const header = [
+const tableHeader = [
   "log date",
   "total record",
   "synced",
@@ -89,6 +44,45 @@ const header = [
 
 export default function SyncMonitorStoreView() {
   const navigate = useNavigate()
+  const { storeId } = useParams<{ storeId: string }>()
+
+  const {
+    data: storeData,
+    isLoading: storeLoading,
+    isError: storeError,
+  } = useQuery<Store[]>({
+    queryKey: ["sync-data"],
+    queryFn: async () => {
+      const data = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
+      )
+      return await data.json()
+    },
+  })
+
+  const {
+    data: dataSyncLog,
+    isLoading: logsLoading,
+    isError: logsError,
+  } = useQuery<SyncLog[]>({
+    queryKey: ["sync-data", storeId],
+    queryFn: async () => {
+      const data = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
+      )
+      return await data.json()
+    },
+    enabled: !!storeId,
+  })
+
+  const storeDataFiltered = storeData?.find((store) => store.id === storeId)
+
+  const isLoading = storeLoading || logsLoading
+  const isError = storeError || logsError
+
+  if (isLoading) return <p>Loading....</p>
+  if (isError || !storeData || !dataSyncLog)
+    return <p>Error loading store data</p>
 
   return (
     <div className="flex flex-col gap-5">
@@ -96,28 +90,38 @@ export default function SyncMonitorStoreView() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink className="text-sm font-medium text-black/50">
+              <BreadcrumbLink
+                className="text-sm font-medium text-black/50"
+                onClick={() => navigate(-1)}
+              >
                 Home
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-black">
-                Store #004 Malolos Bayan
+                Store {storeDataFiltered?.name}{" "}
+                {storeDataFiltered?.municipality}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
       <div className="bg-white px-6 py-5">
-        <h2 className="text-2xl font-medium">Store #004 Malolos Bayan</h2>
-        <p className="text-xs font-normal text-[#8A96A3]">ID: DIY-MLS-001</p>
+        <h2 className="text-2xl font-medium">
+          Store {storeDataFiltered?.name} {storeDataFiltered?.municipality}
+        </h2>
+        <p className="text-xs font-normal text-[#8A96A3]">
+          ID: {storeDataFiltered?.id}
+        </p>
         <div className="mt-4 flex gap-5">
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">
               Device Model
             </p>
-            <p className="text-sm font-normal">ZKTeco F18</p>
+            <p className="text-sm font-normal">
+              {storeDataFiltered?.devices[0].model}
+            </p>
           </div>
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">Status</p>
@@ -132,7 +136,7 @@ export default function SyncMonitorStoreView() {
         <Table>
           <TableHeader>
             <TableRow className="bg-[#F6F7F9]">
-              {header.map((header) => (
+              {tableHeader.map((header) => (
                 <TableHead
                   className="text-center text-xs font-semibold tracking-[0.5px] text-navy-blue uppercase first:text-left"
                   key={header}
@@ -143,9 +147,9 @@ export default function SyncMonitorStoreView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData?.map(
+            {dataSyncLog?.map(
               (
-                { logDate, totalRecord, synced, pending, lastSync, status },
+                { id, logDate, totalRecord, pending, lastSync, status },
                 index
               ) => {
                 return (
@@ -166,7 +170,7 @@ export default function SyncMonitorStoreView() {
                       <div className="grid place-items-center">
                         <div>
                           <p className="text-xs font-medium text-navy-blue">
-                            {synced}
+                            {totalRecord}
                           </p>
                         </div>
                       </div>
@@ -192,9 +196,11 @@ export default function SyncMonitorStoreView() {
                     <TableCell>
                       <div className="grid place-items-center">
                         <div>
-                          <p className="text-xs font-medium text-navy-blue">
-                            {status}
-                          </p>
+                          <Badge
+                            className={`flex items-center gap-1 bg-green-400 text-white`}
+                          >
+                            {capitalize(status)}
+                          </Badge>
                         </div>
                       </div>
                     </TableCell>
@@ -203,7 +209,9 @@ export default function SyncMonitorStoreView() {
                         <div>
                           <Button
                             variant={"outline"}
-                            onClick={() => navigate("/sync-monitor/store/logs")}
+                            onClick={() =>
+                              navigate(`/sync-monitor/${storeId}/${id}`)
+                            }
                           >
                             <EyeIcon />
                           </Button>

@@ -15,116 +15,109 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
-import { formatDate } from "date-fns"
+import { format, formatDate } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field } from "@/components/ui/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-  InputGroupText,
 } from "@/components/ui/input-group"
-import ExportIcon from "@/components/icons/export-icon"
 import SearchIcon from "@/components/icons/search-icon"
+import { useNavigate, useParams } from "react-router"
+import { useQuery } from "@tanstack/react-query"
+import type { Store } from "../.."
+import type { SyncLog } from ".."
+import { useState } from "react"
 
-const dummyHeader = ["employee", "mode", "date"]
+type AttendanceRecord = {
+  id: string
+  employeeName: string
+  createdAt: Date
+  updatedAt: Date
+  logType: "timeIn" | "timeOut"
+  logDate: Date
+  storeSyncRecordID: string
+}
 
-const dummyData = [
-  {
-    employeeName: "John Doe",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:00:00Z"),
-  },
-  {
-    employeeName: "John Doe",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:00:00Z"),
-  },
-  {
-    employeeName: "Jane Smith",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:15:00Z"),
-  },
-  {
-    employeeName: "Jane Smith",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:05:00Z"),
-  },
-  {
-    employeeName: "Michael Lee",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:05:00Z"),
-  },
-  {
-    employeeName: "Michael Lee",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:10:00Z"),
-  },
-  {
-    employeeName: "Emily Davis",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:10:00Z"),
-  },
-  {
-    employeeName: "Emily Davis",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:15:00Z"),
-  },
-  {
-    employeeName: "David Wilson",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:20:00Z"),
-  },
-  {
-    employeeName: "David Wilson",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:25:00Z"),
-  },
-  {
-    employeeName: "Sophia Brown",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:30:00Z"),
-  },
-  {
-    employeeName: "Sophia Brown",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:35:00Z"),
-  },
-  {
-    employeeName: "Chris Johnson",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:40:00Z"),
-  },
-  {
-    employeeName: "Chris Johnson",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:45:00Z"),
-  },
-  {
-    employeeName: "Olivia Martinez",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:50:00Z"),
-  },
-  {
-    employeeName: "Olivia Martinez",
-    mode: "Time Out",
-    date: new Date("2026-04-01T17:55:00Z"),
-  },
-  {
-    employeeName: "Ethan Anderson",
-    mode: "Time In",
-    date: new Date("2026-04-01T08:55:00Z"),
-  },
-  {
-    employeeName: "Ethan Anderson",
-    mode: "Time Out",
-    date: new Date("2026-04-01T18:00:00Z"),
-  },
-]
+type StoreSyncRecordWithAttendance = {
+  id: string
+  syncDate: Date
+  storesId: Date
+  attendanceRecord: AttendanceRecord[]
+}
+
+const tableHeader = ["employee", "mode", "date"]
 
 export default function SyncMonitorDetailedView() {
+  const navigate = useNavigate()
+  const { storeId, detailedId } = useParams<{
+    storeId: string
+    detailedId: string
+  }>()
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const {
+    data: storeData,
+    isLoading: storeLoading,
+    isError: storeError,
+  } = useQuery<Store[]>({
+    queryKey: ["stores"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
+      )
+      return res.json()
+    },
+  })
+
+  const {
+    data: syncLogData,
+    isLoading: syncLoading,
+    isError: syncError,
+  } = useQuery<SyncLog[]>({
+    queryKey: ["sync-logs", storeId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
+      )
+      return res.json()
+    },
+    enabled: !!storeId,
+  })
+
+  const {
+    data: attendanceData,
+    isLoading: detailLoading,
+    isError: detailError,
+  } = useQuery<StoreSyncRecordWithAttendance>({
+    queryKey: ["attendance", storeId, detailedId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+      )
+      return res.json()
+    },
+    enabled: !!storeId && !!detailedId,
+  })
+
+  const store = storeData?.find((s) => s.id === storeId)
+  const syncLog = syncLogData?.find((log) => log.id === detailedId)
+  const filteredAttendance = attendanceData?.attendanceRecord?.filter(
+    (record) =>
+      record.employeeName.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const isLoading = storeLoading || syncLoading || detailLoading
+  const isError = storeError || syncError || detailError
+
+  if (isLoading) return <p>Loading....</p>
+  if (isError || !store || !syncLog || !attendanceData)
+    return <p>Error loading data</p>
+
   return (
     <div className="flex flex-col gap-5">
+      {/* Breadcrumb */}
       <div className="bg-white px-6 py-5">
         <Breadcrumb>
           <BreadcrumbList>
@@ -135,28 +128,37 @@ export default function SyncMonitorDetailedView() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-black/50">
-                Store #004 Malolos Bayan
+              <BreadcrumbPage
+                className="cursor-pointer text-sm font-medium text-black/50"
+                onClick={() => navigate(-1)}
+              >
+                Store {store.name} {store.municipality}
               </BreadcrumbPage>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-black">
-                Logs for March 10, 2026
+                Logs for {format(syncLog.logDate, "MMMM d, yyyy")}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+
+      {/* Store Info */}
       <div className="bg-white px-6 py-5">
-        <h2 className="text-2xl font-medium">Store #004 Malolos Bayan</h2>
-        <p className="text-xs font-normal text-[#8A96A3]">ID: DIY-MLS-001</p>
+        <h2 className="text-2xl font-medium">
+          Store {store.name} {store.municipality}
+        </h2>
+        <p className="text-xs font-normal text-[#8A96A3]">ID: {store.id}</p>
         <div className="mt-4 flex gap-5">
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">
               Device Model
             </p>
-            <p className="text-sm font-normal">ZKTeco F18</p>
+            <p className="text-sm font-normal">
+              {store.devices?.[0]?.model || "N/A"}
+            </p>
           </div>
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">Status</p>
@@ -167,21 +169,25 @@ export default function SyncMonitorDetailedView() {
           </div>
         </div>
       </div>
+
+      {/* Attendance Records Table */}
       <div className="bg-white px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-semibold text-nowrap text-[#1F1F1F]">
-              Logs for March 10, 2026
+              Logs for {format(syncLog.logDate, "MMMM d, yyyy")}
             </h1>
             <Badge className="bg-[#D4FDE7] text-[#00662D]">
-              146 / 146 Synced
+              {attendanceData.attendanceRecord.length} /{" "}
+              {attendanceData.attendanceRecord.length} Synced
             </Badge>
           </div>
           <Field className="w-55.75">
             <InputGroup>
               <InputGroupInput
-                id="input-group-url"
-                placeholder="Search"
+                placeholder="Search employee name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="text-sm placeholder:text-xs placeholder:text-[#00000080]"
               />
               <InputGroupAddon align={"inline-start"}>
@@ -193,7 +199,7 @@ export default function SyncMonitorDetailedView() {
         <Table className="mt-4">
           <TableHeader>
             <TableRow className="bg-[#F6F7F9]">
-              {dummyHeader.map((header) => (
+              {tableHeader.map((header) => (
                 <TableHead
                   className="text-center text-xs font-semibold tracking-[0.5px] text-navy-blue uppercase first:text-left"
                   key={header}
@@ -204,21 +210,23 @@ export default function SyncMonitorDetailedView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyData?.map(({ employeeName, date, mode }, index) => {
-              return (
+            {filteredAttendance?.map(
+              ({ employeeName, logDate, logType, id }, index) => (
                 <TableRow key={index} className="h-16">
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar>
                         <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>CN</AvatarFallback>
+                        <AvatarFallback>
+                          {employeeName.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="text-sm font-semibold text-navy-blue">
                           {employeeName}
                         </p>
                         <p className="text-xs font-normal text-[#8A96A3]">
-                          EMP-10067
+                          {id}
                         </p>
                       </div>
                     </div>
@@ -226,25 +234,23 @@ export default function SyncMonitorDetailedView() {
                   <TableCell>
                     <div className="grid place-items-center">
                       <p className="text-sm font-medium text-navy-blue">
-                        {mode}
+                        {logType}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="grid place-items-center">
-                      <div>
-                        <p className="text-sm font-medium text-navy-blue">
-                          {formatDate(date, "hh:mm a")}
-                        </p>
-                        <p className="text-xs font-normal text-[#8A96A3]">
-                          {formatDate(date, "MMMM d, yyyy")}
-                        </p>
-                      </div>
+                      <p className="text-sm font-medium text-navy-blue">
+                        {formatDate(logDate, "hh:mm a")}
+                      </p>
+                      <p className="text-xs font-normal text-[#8A96A3]">
+                        {formatDate(logDate, "MMMM d, yyyy")}
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
               )
-            })}
+            )}
           </TableBody>
         </Table>
       </div>

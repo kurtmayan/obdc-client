@@ -6,9 +6,9 @@ import SyncMonitor from "./pages/sync-monitor"
 import RootLayout from "./layouts/root-layout"
 import Error from "./components/error"
 import ProtectedRoute from "./components/protected-route"
-import SyncMonitorStoreView from "./pages/sync-monitor/[store]"
+import SyncMonitorStoreView from "./pages/sync-monitor/[storeId]"
 import Dashboard from "./pages/dashboard"
-import SyncMonitorDetailedView from "./pages/sync-monitor/[store]/[detailed]"
+import SyncMonitorDetailedView from "./pages/sync-monitor/[storeId]/[detailedId]"
 
 export const router = createBrowserRouter([
   {
@@ -44,12 +44,12 @@ export const router = createBrowserRouter([
                 ErrorBoundary: Error,
               },
               {
-                path: "sync-monitor/:store",
+                path: "sync-monitor/:storeId",
                 Component: SyncMonitorStoreView,
                 ErrorBoundary: Error,
               },
               {
-                path: "sync-monitor/:store/:detailed",
+                path: "sync-monitor/:storeId/:detailedId",
                 Component: SyncMonitorDetailedView,
                 ErrorBoundary: Error,
               },
