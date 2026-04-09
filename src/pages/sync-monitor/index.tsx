@@ -126,14 +126,17 @@ export default function SyncMonitor() {
                         <div>
                           <p className="text-sm font-medium text-navy-blue">
                             {format(
-                              storeSyncRecords[0].syncDate,
+                              storeSyncRecords[0]?.syncDate,
                               "MMMM d, h:mm a"
                             )}
                           </p>
                           <p className="text-xs font-normal text-[#8A96A3]">
-                            {formatDistanceToNow(storeSyncRecords[0].syncDate, {
-                              addSuffix: true,
-                            })}
+                            {formatDistanceToNow(
+                              storeSyncRecords[0]?.syncDate,
+                              {
+                                addSuffix: true,
+                              }
+                            )}
                           </p>
                         </div>
                       </div>

@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/protected-route"
 import SyncMonitorStoreView from "./pages/sync-monitor/[storeId]"
 import Dashboard from "./pages/dashboard"
 import SyncMonitorDetailedView from "./pages/sync-monitor/[storeId]/[detailedId]"
+import TwoFactorAuthenticationPage from "./pages/2fa"
 
 export const router = createBrowserRouter([
   {
@@ -27,8 +28,12 @@ export const router = createBrowserRouter([
         ],
       },
       {
+        path: "auth/2fa",
+        Component: TwoFactorAuthenticationPage,
+      },
+      {
         path: "",
-        // Component: ProtectedRoute,
+        Component: ProtectedRoute,
         children: [
           {
             Component: AppLayout,

@@ -32,6 +32,7 @@ import { useState } from "react"
 
 type AttendanceRecord = {
   id: string
+  userId?: string
   employeeName: string
   createdAt: Date
   updatedAt: Date
@@ -211,22 +212,22 @@ export default function SyncMonitorDetailedView() {
           </TableHeader>
           <TableBody>
             {filteredAttendance?.map(
-              ({ employeeName, logDate, logType, id }, index) => (
+              ({ employeeName, logDate, logType, id, userId }, index) => (
                 <TableRow key={index} className="h-16">
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Avatar>
+                      {/* <Avatar>
                         <AvatarImage src="https://github.com/shadcn.png" />
                         <AvatarFallback>
                           {employeeName.charAt(0)}
                         </AvatarFallback>
-                      </Avatar>
+                      </Avatar> */}
                       <div>
                         <p className="text-sm font-semibold text-navy-blue">
                           {employeeName}
                         </p>
                         <p className="text-xs font-normal text-[#8A96A3]">
-                          {id}
+                          {userId}
                         </p>
                       </div>
                     </div>
