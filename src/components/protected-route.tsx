@@ -14,7 +14,7 @@ type ValidateTypeResponse = {
 
 export default function ProtectedRoute() {
   const { data, isLoading, isError } = useQuery<ValidateTypeResponse>({
-    queryKey: ["stores"],
+    queryKey: ["auth"],
     queryFn: async () => {
       const res = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
