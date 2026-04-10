@@ -151,7 +151,9 @@ export default function SyncMonitorDetailedView() {
         <h2 className="text-2xl font-medium">
           Store {store.name} {store.municipality}
         </h2>
-        <p className="text-xs font-normal text-[#8A96A3]">ID: {store.code}</p>
+        <p className="text-xs font-normal text-[#8A96A3]">
+          Store ID: {store.code}
+        </p>
         <div className="mt-4 flex gap-5">
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">
@@ -221,7 +223,7 @@ export default function SyncMonitorDetailedView() {
                           {employeeName}
                         </p>
                         <p className="text-xs font-normal text-[#8A96A3]">
-                          {userId}
+                          User ID: {userId}
                         </p>
                       </div>
                     </div>

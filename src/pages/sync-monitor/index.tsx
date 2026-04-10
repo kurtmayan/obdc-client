@@ -52,11 +52,7 @@ export default function SyncMonitor() {
   const navigate = useNavigate()
   const { storeId } = useParams<{ storeId?: string }>()
 
-  const {
-    data: dataStores = [],
-    isLoading,
-    isError,
-  } = useQuery<Store[]>({
+  const { data: dataStores = [], isLoading } = useQuery<Store[]>({
     queryKey: ["stores"],
     queryFn: async () => {
       const res = await fetch(
