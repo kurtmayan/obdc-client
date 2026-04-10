@@ -3,8 +3,33 @@ import StatsInfo from "./stats-info"
 import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
+import { useQuery } from "@tanstack/react-query"
+
+type StatisticsType = {
+  totalStores: number
+  totalStoreSynced: number
+  totalStoreUnsynced: number
+}
 
 export default function Dashboard() {
+  const { data: dataStatistics } = useQuery<StatisticsType>({
+    queryKey: ["statistics"],
+    queryFn: async () => {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/statistics`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">
@@ -17,19 +42,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-3 gap-5">
         <StatsInfo
           title="Total Stores"
-          value="1,000"
+          value={`${dataStatistics?.totalStores || 0}`}
           description="Total stores being monitored"
           icon={<StoreIcon />}
         />
         <StatsInfo
           title="Stores Synced"
-          value="980"
+          value={`${dataStatistics?.totalStoreSynced || 0}`}
           description="Number of stores successfully synced"
           icon={<CorrectIcon />}
         />
         <StatsInfo
           title="Stores Unsynced"
-          value="20"
+          value={`${dataStatistics?.totalStoreUnsynced || 0}`}
           description="Number of stores pending or failed sync"
           icon={<AlertIcon />}
         />

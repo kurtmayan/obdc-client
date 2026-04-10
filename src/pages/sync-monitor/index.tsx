@@ -32,6 +32,7 @@ type Device = {
 
 export type Store = {
   id: string
+  code: string
   name: string
   region: string
   province: string
@@ -52,7 +53,7 @@ export default function SyncMonitor() {
   const { storeId } = useParams<{ storeId?: string }>()
 
   const {
-    data: dataStores,
+    data: dataStores = [],
     isLoading,
     isError,
   } = useQuery<Store[]>({
@@ -69,8 +70,8 @@ export default function SyncMonitor() {
     return <Outlet />
   }
 
-  if (isLoading) return <p>Loading....</p>
-  if (isError || !dataStores) return <p>Error loading stores</p>
+  // if (isLoading) return <p>Loading....</p>
+  // if (isError || !dataStores) return <p>Error loading stores</p>
 
   return (
     <div className="flex flex-col gap-5">
@@ -102,6 +103,14 @@ export default function SyncMonitor() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {isLoading && (
+              <TableCell
+                colSpan={tableHeader.length}
+                className="py-10 text-center text-sm text-gray-500"
+              >
+                Loading...
+              </TableCell>
+            )}
             {dataStores?.map(
               ({ id, name, region, storeSyncRecords, devices }, index) => {
                 return (
@@ -125,15 +134,20 @@ export default function SyncMonitor() {
                       <div className="grid place-items-center">
                         <div>
                           <p className="text-sm font-medium text-navy-blue">
-                            {format(
-                              storeSyncRecords[0].syncDate,
-                              "MMMM d, h:mm a"
-                            )}
+                            {storeSyncRecords.length != 0 &&
+                              format(
+                                new Date(storeSyncRecords[0]?.syncDate),
+                                "MMMM d, h:mm a"
+                              )}
                           </p>
                           <p className="text-xs font-normal text-[#8A96A3]">
-                            {formatDistanceToNow(storeSyncRecords[0].syncDate, {
-                              addSuffix: true,
-                            })}
+                            {storeSyncRecords.length != 0 &&
+                              formatDistanceToNow(
+                                new Date(storeSyncRecords[0]?.syncDate),
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
                           </p>
                         </div>
                       </div>

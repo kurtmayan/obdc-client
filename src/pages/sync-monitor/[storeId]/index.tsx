@@ -112,7 +112,7 @@ export default function SyncMonitorStoreView() {
           Store {storeDataFiltered?.name} {storeDataFiltered?.municipality}
         </h2>
         <p className="text-xs font-normal text-[#8A96A3]">
-          ID: {storeDataFiltered?.id}
+          ID: {storeDataFiltered?.code}
         </p>
         <div className="mt-4 flex gap-5">
           <div>

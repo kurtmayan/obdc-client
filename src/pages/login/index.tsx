@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -5,16 +6,69 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { validateEmail } from "@/lib/validateEmail"
 import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
+import { TriangleAlert } from "lucide-react"
+import { useState } from "react"
+import { useNavigate } from "react-router"
+import type { ErrorResponse } from "@/types/error.type"
+
+type LoginType = {
+  email: string
+  password: string
+}
+
+type LoginResponse = {
+  message: string
+}
 
 export default function LoginPage() {
+  const navigate = useNavigate()
+  const [errorMessage, setErrorMessage] = useState<boolean>(false)
+
+  const postLogin = useMutation<LoginResponse, ErrorResponse, LoginType>({
+    mutationFn: async (credentials) => {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
+      )
+      const data = await response.json()
+      if (!response.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   const form = useForm({
     defaultValues: {
       email: "",
       password: "",
       rememberMe: false,
     },
-    onSubmit: ({ value }) => {
-      console.log(value)
+    onSubmit: async ({ value }: { value: LoginType }) => {
+      try {
+        setErrorMessage(false)
+        const data = await postLogin.mutateAsync({
+          email: value.email,
+          password: value.password,
+        })
+        if (data.message === "OTP Sent to email") {
+          return navigate("/auth/2fa", {
+            state: {
+              email: value.email,
+            },
+          })
+        }
+        return setErrorMessage(true)
+      } catch (err) {
+        return setErrorMessage(true)
+      }
     },
   })
 
@@ -33,6 +87,19 @@ export default function LoginPage() {
         </p>
         <p className="text-[#8A96A3]">Sign in to O-BDC Portal</p>
       </div>
+
+      {errorMessage && (
+        <div className="grid w-full max-w-md items-start gap-4">
+          <Alert variant={"destructive"} className="bg-[#FFE1E2]">
+            <TriangleAlert />
+            <AlertDescription className="text-[#A8000F]">
+              We couldn’t log you in. Please check your username or password and
+              try again.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div className="grid gap-6">
         <form.Field
           name="email"
@@ -42,15 +109,18 @@ export default function LoginPage() {
           }}
           children={({ state, handleBlur, handleChange }) => (
             <>
-              <FieldLabel htmlFor="email">Email or Username</FieldLabel>
+              <FieldLabel htmlFor="email" className="-mb-5">
+                Email
+              </FieldLabel>
               <Input
                 id="email"
                 autoComplete="off"
-                placeholder="User001"
+                placeholder="example@email.com"
                 className="h-11"
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
+                disabled={form.state.isSubmitting}
               />
             </>
           )}
@@ -67,7 +137,9 @@ export default function LoginPage() {
           }}
           children={({ state, handleBlur, handleChange }) => (
             <>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <FieldLabel htmlFor="password" className="-mb-5">
+                Password
+              </FieldLabel>
               <Input
                 id="password"
                 autoComplete="off"
@@ -77,6 +149,7 @@ export default function LoginPage() {
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
+                disabled={form.state.isSubmitting}
               />
             </>
           )}
@@ -95,6 +168,7 @@ export default function LoginPage() {
                     onCheckedChange={(checked) =>
                       handleChange(checked === true)
                     }
+                    disabled={form.state.isSubmitting}
                   />
                   <FieldLabel
                     htmlFor="terms-checkbox-basic"
@@ -109,11 +183,16 @@ export default function LoginPage() {
           <Button
             variant={"link"}
             className="text-[13px] font-medium text-navy-blue underline"
+            disabled={form.state.isSubmitting}
           >
             Forgot password?
           </Button>
         </div>
-        <Button size={"lg"} className="text-[16px] font-semibold">
+        <Button
+          size={"lg"}
+          className="text-[16px] font-semibold"
+          disabled={form.state.isSubmitting}
+        >
           Sign In
         </Button>
       </div>
