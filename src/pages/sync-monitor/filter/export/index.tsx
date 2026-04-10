@@ -38,11 +38,21 @@ export default function Export() {
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
+
       const link = document.createElement("a")
       link.href = url
-      link.download = "attendance-export.csv"
+
+      // ✅ FIX: correct extension
+      link.download = "attendance-export.xlsx"
+
+      // ✅ FIX: attach to DOM
+      document.body.appendChild(link)
+
       link.click()
-      window.URL.revokeObjectURL(url)
+
+      // ✅ FIX: cleanup safely
+      link.remove()
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error("Fetch failed:", error)
     }
