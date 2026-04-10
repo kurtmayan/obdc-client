@@ -70,10 +70,8 @@ export default function SyncMonitor() {
     return <Outlet />
   }
 
-  if (isLoading) return <p>Loading....</p>
-  if (isError || !dataStores) return <p>Error loading stores</p>
-
-  console.log(dataStores)
+  // if (isLoading) return <p>Loading....</p>
+  // if (isError || !dataStores) return <p>Error loading stores</p>
 
   return (
     <div className="flex flex-col gap-5">
@@ -105,6 +103,14 @@ export default function SyncMonitor() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {isLoading && (
+              <TableCell
+                colSpan={tableHeader.length}
+                className="py-10 text-center text-sm text-gray-500"
+              >
+                Loading...
+              </TableCell>
+            )}
             {dataStores?.map(
               ({ id, name, region, storeSyncRecords, devices }, index) => {
                 return (

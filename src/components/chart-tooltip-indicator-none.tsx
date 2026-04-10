@@ -32,7 +32,7 @@ type StatisticsDatasetsType = {
 }
 
 export function ChartTooltipIndicatorNone() {
-  const { data: dataStatistics } = useQuery<StatisticsDatasetsType[]>({
+  const { data: dataStatistics = [] } = useQuery<StatisticsDatasetsType[]>({
     queryKey: ["statistics/datasets"],
     queryFn: async () => {
       const res = await fetch(
