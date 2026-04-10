@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { DatePickerWithRange } from "./range-picker"
 import Region from "./region"
 import Status from "./status"
+import Location from "./location"
 import ExportIcon from "@/components/icons/export-icon"
 
 export default function Filter() {
@@ -29,6 +30,7 @@ export default function Filter() {
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <DatePickerWithRange />
+        <Location />
         <Region />
         <Status />
       </div>
