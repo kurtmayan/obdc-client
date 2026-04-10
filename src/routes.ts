@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
               {
                 path: "sync-monitor",
                 Component: SyncMonitor,
-                ErrorBoundary: Error,
+                // ErrorBoundary: Error,
               },
               {
                 path: "sync-monitor/:storeId",

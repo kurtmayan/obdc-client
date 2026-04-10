@@ -3,8 +3,30 @@ import StatsInfo from "./stats-info"
 import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
+import { useQuery } from "@tanstack/react-query"
 
 export default function Dashboard() {
+  const { data: dataStatistics } = useQuery({
+    queryKey: ["statistics"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/statistics/datasets`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">

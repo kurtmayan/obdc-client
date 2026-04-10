@@ -1,7 +1,4 @@
-"use client"
-
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-
 import {
   Card,
   CardContent,
@@ -15,15 +12,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-
-const chartData = [
-  { date: "2024-07-15", synced: 450, pending: 300 },
-  { date: "2024-07-16", synced: 380, pending: 200 },
-  { date: "2024-07-17", synced: 520, pending: 120 },
-  { date: "2024-07-18", synced: 140, pending: 100 },
-  { date: "2024-07-19", synced: 600, pending: 350 },
-  { date: "2024-07-20", synced: 480, pending: 400 },
-]
+import { useQuery } from "@tanstack/react-query"
 
 const chartConfig = {
   running: {
@@ -35,9 +24,40 @@ const chartConfig = {
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig
-const maxTotal = Math.max(...chartData.map((d) => d.synced + d.pending))
+
+type StatisticsDatasetsType = {
+  date: Date
+  pending: number
+  synced: number
+}
 
 export function ChartTooltipIndicatorNone() {
+  const { data: dataStatistics } = useQuery<StatisticsDatasetsType[]>({
+    queryKey: ["statistics/datasets"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/statistics/datasets`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
+  const maxTotal = Math.max(
+    0,
+    ...(dataStatistics?.map((d) => d.synced + d.pending) ?? [])
+  )
+
   return (
     <Card className="ring-0">
       <CardHeader>
@@ -50,7 +70,7 @@ export function ChartTooltipIndicatorNone() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData} barSize={58}>
+          <BarChart accessibilityLayer data={dataStatistics} barSize={58}>
             <CartesianGrid strokeDasharray="3" vertical={false} />
             <XAxis
               dataKey="date"

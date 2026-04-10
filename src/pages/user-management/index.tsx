@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -13,6 +14,11 @@ import {
 } from "@/components/ui/input-group"
 import SearchIcon from "@/components/icons/search-icon"
 import InviteUser from "./invite-user"
+import { useQuery } from "@tanstack/react-query"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dot, SquarePen } from "lucide-react"
 
 type StoreSyncRecord = {
   id: string
@@ -44,6 +50,17 @@ export type Store = {
   devices: Device[]
 }
 
+export interface User {
+  id: string
+  firstName: string
+  middleName: string
+  lastName: string
+  contactNumber: string | null
+  email: string
+  role: "SUPERADMIN" | "HR" | "MP"
+  status: "ACTIVE" | "PENDING"
+}
+
 const tableHeader = [
   "name",
   "email address",
@@ -53,6 +70,19 @@ const tableHeader = [
 ]
 
 export default function UserManagement() {
+  const { data } = useQuery<User[]>({
+    queryKey: ["sync-data"],
+    queryFn: async () => {
+      const data = await fetch(`${import.meta.env.VITE_SERVER_URL}/users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      return await data.json()
+    },
+  })
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">
@@ -91,78 +121,68 @@ export default function UserManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* {dataStores?.map(
-              ({ id, name, region, storeSyncRecords, devices }, index) => {
+            {data?.map(
+              (
+                { firstName, lastName, contactNumber, email, status },
+                index
+              ) => {
+                const statusStyles: Record<
+                  User["status"],
+                  { bg: string; text: string }
+                > = {
+                  ACTIVE: { bg: "bg-[#10B9811A]", text: "text-[#059669]" },
+                  PENDING: { bg: "bg-[#F59E0B1A]", text: "text-[#D97706]" },
+                }
                 return (
                   <TableRow key={index}>
                     <TableCell className="items-center gap-2">
-                      <p className="text-sm font-semibold text-navy-blue">
-                        {name}
-                      </p>
-                      <p className="text-xs font-normal text-[#8A96A3]">
-                        {devices[0].model} - {devices[0].serialNumber}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <Avatar>
+                          <AvatarImage src="#" />
+                          <AvatarFallback>{firstName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm font-semibold text-navy-blue">
+                          {firstName + " " + lastName}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="grid place-items-center">
+                        <p className="text-sm font-medium text-[#8A96A3]">
+                          {email}
+                        </p>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="grid place-items-center">
                         <p className="text-sm font-medium text-navy-blue">
-                          {region}
+                          {contactNumber}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="grid place-items-center">
                         <div>
-                          <p className="text-sm font-medium text-navy-blue">
-                            {format(
-                              storeSyncRecords[0]?.syncDate,
-                              "MMMM d, h:mm a"
-                            )}
-                          </p>
-                          <p className="text-xs font-normal text-[#8A96A3]">
-                            {formatDistanceToNow(
-                              storeSyncRecords[0]?.syncDate,
-                              {
-                                addSuffix: true,
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
                           <Badge
-                            className={`flex items-center gap-1 bg-green-400 text-white`}
+                            className={`${statusStyles[status].bg} text-xs font-semibold ${statusStyles[status].text} flex items-center gap-1`}
                           >
-                            {capitalize("synced")}
+                            <Dot size={12} strokeWidth={3} />
+                            {status}
                           </Badge>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="grid place-items-center">
-                        <div className="flex flex-row">
-                          <div>
-                            <Button variant={"outline"}>
-                              <SyncIcon height={6} width={6} />
-                              Retry
-                            </Button>
-                          </div>
-                          <Button
-                            variant={"outline"}
-                            onClick={() => navigate(`/sync-monitor/${id}`)}
-                          >
-                            View
-                          </Button>
-                        </div>
+                        <Button variant={"link"}>
+                          <SquarePen size={16} />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
                 )
               }
-            )} */}
+            )}
           </TableBody>
         </Table>
       </div>

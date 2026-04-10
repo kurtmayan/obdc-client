@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Badge } from "@/components/ui/badge"
 import { format, formatDate } from "date-fns"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 import { Field } from "@/components/ui/field"
 import {
   InputGroup,
@@ -151,7 +151,7 @@ export default function SyncMonitorDetailedView() {
         <h2 className="text-2xl font-medium">
           Store {store.name} {store.municipality}
         </h2>
-        <p className="text-xs font-normal text-[#8A96A3]">ID: {store.id}</p>
+        <p className="text-xs font-normal text-[#8A96A3]">ID: {store.code}</p>
         <div className="mt-4 flex gap-5">
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">
@@ -212,16 +212,10 @@ export default function SyncMonitorDetailedView() {
           </TableHeader>
           <TableBody>
             {filteredAttendance?.map(
-              ({ employeeName, logDate, logType, id, userId }, index) => (
+              ({ employeeName, logDate, logType, userId }, index) => (
                 <TableRow key={index} className="h-16">
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      {/* <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>
-                          {employeeName.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar> */}
                       <div>
                         <p className="text-sm font-semibold text-navy-blue">
                           {employeeName}
@@ -235,7 +229,7 @@ export default function SyncMonitorDetailedView() {
                   <TableCell>
                     <div className="grid place-items-center">
                       <p className="text-sm font-medium text-navy-blue">
-                        {logType}
+                        {logType ? "Time In" : "Time Out"}
                       </p>
                     </div>
                   </TableCell>
