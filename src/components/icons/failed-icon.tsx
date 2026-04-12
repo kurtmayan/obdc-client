@@ -10,11 +10,11 @@ export default function FailedIcon(props: SVGProps<SVGSVGElement>) {
       fill="#000000"
       {...props}
     >
-      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
       <g
         id="SVGRepo_tracerCarrier"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       ></g>
       <g id="SVGRepo_iconCarrier">
         {" "}
@@ -28,9 +28,9 @@ export default function FailedIcon(props: SVGProps<SVGSVGElement>) {
               <line
                 fill="none"
                 stroke="#000000"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.3679999999999999"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.3679999999999999"
                 x1="12"
                 x2="12"
                 y1="8"
@@ -39,9 +39,9 @@ export default function FailedIcon(props: SVGProps<SVGSVGElement>) {
               <line
                 fill="none"
                 stroke="#000000"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.3679999999999999"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.3679999999999999"
                 x1="12"
                 x2="12"
                 y1="16"
@@ -55,9 +55,9 @@ export default function FailedIcon(props: SVGProps<SVGSVGElement>) {
                 id="_--Circle"
                 r="10"
                 stroke="#000000"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.3679999999999999"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.3679999999999999"
               ></circle>{" "}
             </g>{" "}
           </g>{" "}

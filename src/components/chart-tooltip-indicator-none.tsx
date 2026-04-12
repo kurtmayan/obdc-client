@@ -13,6 +13,13 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { Button } from "./ui/button"
+import { addDays, format, subDays } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { Calendar } from "./ui/calendar"
+import type { DateRange } from "react-day-picker"
 
 const chartConfig = {
   running: {
@@ -32,7 +39,12 @@ type StatisticsDatasetsType = {
 }
 
 export function ChartTooltipIndicatorNone() {
-  const { data: dataStatistics = [] } = useQuery<StatisticsDatasetsType[]>({
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 7),
+    to: new Date(),
+  })
+
+  const { data: dataStatistic = [] } = useQuery<StatisticsDatasetsType[]>({
     queryKey: ["statistics/datasets"],
     queryFn: async () => {
       const res = await fetch(
@@ -55,75 +67,123 @@ export function ChartTooltipIndicatorNone() {
 
   const maxTotal = Math.max(
     0,
-    ...(dataStatistics?.map((d) => d.synced + d.pending) ?? [])
+    ...(dataStatistic?.map((d) => d.synced + d.pending) ?? [])
   )
 
-  return (
-    <Card className="ring-0">
-      <CardHeader>
-        <CardTitle className="text-[22px] font-semibold text-[#071631]">
-          Sync Volume
-        </CardTitle>
-        <CardDescription className="text-[13.42px] font-normal text-[#656565]">
-          Records processed for the last 7 days
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={dataStatistics} barSize={58}>
-            <CartesianGrid strokeDasharray="3" vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => {
-                return new Date(value).toLocaleDateString("en-US", {
-                  weekday: "short",
-                })
-              }}
-              tick={{
-                fill: "#9CA2AD",
-                fontSize: 13.42,
-                fontWeight: 400,
-              }}
-            />
-            <YAxis
-              domain={[0, maxTotal]}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickCount={5}
-              tick={{
-                fill: "#9CA2AD",
-                fontSize: 13.42,
-                fontWeight: 400,
-              }}
-              tickFormatter={(value) =>
-                value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`
-              }
-            />
-            <Bar
-              dataKey="pending"
-              stackId="a"
-              fill="#E74C3C"
-              radius={[0, 0, 8, 8]}
-            />
-            <Bar
-              dataKey="synced"
-              stackId="a"
-              fill="#5FBE8B"
-              radius={[8, 8, 0, 0]}
-            />
+  console.log(dataStatistic)
 
-            <ChartTooltip
-              content={<ChartTooltipContent hideIndicator />}
-              cursor={false}
-              defaultIndex={1}
-            />
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+  const dataStatistics = dataStatistic.filter((item) => {
+    if (!date?.from || !date?.to) return true
+
+    const itemDate = new Date(item.date + "T00:00:00")
+
+    return itemDate >= date.from && itemDate <= date.to
+  })
+
+  return (
+    <div className="p-5">
+      {/* Header */}
+      <div className="mb-5 flex flex-row justify-between">
+        <p className="text-[22px] font-bold">Sync Volume</p>
+        <div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant={"outline"}>
+                <span className="flex-1 text-left text-xs font-medium text-black/50">
+                  {date?.from ? (
+                    date.to ? (
+                      <>
+                        {format(date.from, "LLL dd, y")} -{" "}
+                        {format(date.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(date.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </span>
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={setDate}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+      <div>
+        {dataStatistics.length === 0 ? (
+          <div className="flex h-75 items-center justify-center text-gray-400">
+            No data
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <BarChart accessibilityLayer data={dataStatistics} barSize={58}>
+              <CartesianGrid strokeDasharray="3" vertical={false} />
+
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                tickFormatter={(value) => {
+                  return new Date(value).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                  })
+                }}
+                tick={{
+                  fill: "#9CA2AD",
+                  fontSize: 13.42,
+                  fontWeight: 400,
+                }}
+              />
+
+              <YAxis
+                domain={[0, maxTotal]}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickCount={5}
+                tick={{
+                  fill: "#9CA2AD",
+                  fontSize: 13.42,
+                  fontWeight: 400,
+                }}
+                tickFormatter={(value) =>
+                  value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`
+                }
+              />
+
+              <Bar
+                dataKey="pending"
+                stackId="a"
+                fill="#E74C3C"
+                radius={[0, 0, 8, 8]}
+              />
+              <Bar
+                dataKey="synced"
+                stackId="a"
+                fill="#5FBE8B"
+                radius={[8, 8, 0, 0]}
+              />
+
+              <ChartTooltip
+                content={<ChartTooltipContent hideIndicator />}
+                cursor={false}
+                defaultIndex={1}
+              />
+            </BarChart>
+          </ChartContainer>
+        )}
+      </div>
+    </div>
   )
 }
