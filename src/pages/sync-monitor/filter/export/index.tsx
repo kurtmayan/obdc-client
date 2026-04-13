@@ -1,3 +1,4 @@
+import React from "react"
 import { Button } from "@/components/ui/button"
 import ExportIcon from "@/components/icons/export-icon"
 import { Input } from "@/components/ui/input"
@@ -25,11 +26,32 @@ import {
 import { DatePickerWithRange } from "./date-range"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import type { DateRange } from "react-day-picker"
+import { addDays } from "date-fns"
 
 export default function Export() {
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: new Date(new Date().getFullYear(), 0, 20),
+    to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+  })
+
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}` // "2026-04-13"
+  }
+
   const exportData = async () => {
     try {
-      const response = await fetch("http://localhost:3000/sync/export")
+      const params = new URLSearchParams()
+
+      if (date?.from) params.append("startDate", formatLocalDate(date.from))
+      if (date?.to) params.append("endDate", formatLocalDate(date.to))
+
+      const response = await fetch(
+        `http://localhost:3000/sync/export?${params.toString()}`
+      )
 
       if (!response.ok) {
         console.error("Error:", await response.text())
@@ -38,25 +60,18 @@ export default function Export() {
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-
       const link = document.createElement("a")
       link.href = url
-
-      // ✅ FIX: correct extension
       link.download = "attendance-export.xlsx"
-
-      // ✅ FIX: attach to DOM
       document.body.appendChild(link)
-
       link.click()
-
-      // ✅ FIX: cleanup safely
       link.remove()
       setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error("Fetch failed:", error)
     }
   }
+
   const stores = [
     {
       id: 1,
@@ -102,7 +117,7 @@ export default function Export() {
           <div className="grid gap-3">
             <Label htmlFor="sheet-demo-name">Date Range</Label>
             {/* <Input id="sheet-demo-name" defaultValue="Pedro Duarte" /> */}
-            <DatePickerWithRange />
+            <DatePickerWithRange date={date} onChange={setDate} />
           </div>
           <div className="grid gap-3">
             <Label htmlFor="sheet-demo-username">Target Location</Label>

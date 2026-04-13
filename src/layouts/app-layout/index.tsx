@@ -2,9 +2,15 @@ import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import UsersIcon from "@/components/icons/users-icon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { Link, Outlet, useLocation } from "react-router"
+import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
   const navLinks = [
@@ -14,6 +20,7 @@ export default function AppLayout() {
   ]
 
   const { pathname } = useLocation()
+  const navigate = useNavigate()
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
@@ -46,18 +53,32 @@ export default function AppLayout() {
 
         <div className="mt-auto">
           <Separator />
-          <div className="mb-5 flex w-full flex-row items-center gap-3 px-3 py-10">
-            <Avatar>
-              <AvatarImage src="/app-logo.svg" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold text-[#ffffff]">
-                Juan Dela Cruz
-              </p>
-              <p className="text-xs font-normal text-[#ffffff]/60">Admin</p>
-            </div>
-          </div>
+          <Popover modal>
+            <PopoverTrigger>
+              <div className="mb-5 flex w-full flex-row items-center gap-3 px-3 py-10">
+                <Avatar>
+                  <AvatarImage src="/app-logo.svg" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-semibold text-[#ffffff]">
+                    Juan Dela Cruz
+                  </p>
+                  <p className="text-xs font-normal text-[#ffffff]/60">Admin</p>
+                </div>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent align="start">
+              <Button
+                onClick={() => {
+                  localStorage.removeItem("token")
+                  navigate("/auth/login")
+                }}
+              >
+                Logout
+              </Button>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
