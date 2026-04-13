@@ -231,7 +231,7 @@ export default function SyncMonitorDetailedView() {
                   <TableCell>
                     <div className="grid place-items-center">
                       <p className="text-sm font-medium text-navy-blue">
-                        {logType ? "Time In" : "Time Out"}
+                        {logType ? "Time Out" : "Time In"}
                       </p>
                     </div>
                   </TableCell>
