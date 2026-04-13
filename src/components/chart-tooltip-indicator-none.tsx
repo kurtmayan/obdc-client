@@ -45,10 +45,19 @@ export function ChartTooltipIndicatorNone() {
   })
 
   const { data: dataStatistic = [] } = useQuery<StatisticsDatasetsType[]>({
-    queryKey: ["statistics/datasets"],
+    queryKey: ["statistics/datasets", date?.from, date?.to],
     queryFn: async () => {
+      const params = new URLSearchParams()
+
+      if (date?.from) {
+        params.set("startDate", format(date.from, "yyyy-MM-dd"))
+      }
+      if (date?.to) {
+        params.set("endDate", format(date.to, "yyyy-MM-dd"))
+      }
+
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/statistics/datasets`,
+        `${import.meta.env.VITE_SERVER_URL}/statistics/datasets?${params.toString()}`,
         {
           method: "GET",
           headers: {
