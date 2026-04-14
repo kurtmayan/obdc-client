@@ -11,6 +11,8 @@ import Dashboard from "./pages/dashboard"
 import SyncMonitorDetailedView from "./pages/sync-monitor/[storeId]/[detailedId]"
 import TwoFactorAuthenticationPage from "./pages/2fa"
 import UserManagement from "./pages/user-management"
+import ForgotPasswordPage from "./pages/forgot-password"
+import UpdatePasswordPage from "./pages/update-password"
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +33,14 @@ export const router = createBrowserRouter([
       {
         path: "auth/2fa",
         Component: TwoFactorAuthenticationPage,
+      },
+      {
+        path: "auth/forgot-password",
+        Component: ForgotPasswordPage,
+      },
+      {
+        path: "auth/update-password",
+        Component: UpdatePasswordPage,
       },
       {
         path: "",

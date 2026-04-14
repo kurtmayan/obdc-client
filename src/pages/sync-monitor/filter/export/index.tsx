@@ -119,10 +119,6 @@ export default function Export() {
             {/* <Input id="sheet-demo-name" defaultValue="Pedro Duarte" /> */}
             <DatePickerWithRange date={date} onChange={setDate} />
           </div>
-          <div className="grid gap-3">
-            <Label htmlFor="sheet-demo-username">Target Location</Label>
-            <Input id="sheet-demo-username" />
-          </div>
           <div>
             <div className="w-full max-w-md space-y-4">
               <div className="flex items-center justify-between">
