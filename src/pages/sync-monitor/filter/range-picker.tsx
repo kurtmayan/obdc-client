@@ -7,15 +7,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { addDays, format } from "date-fns"
+import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { type DateRange } from "react-day-picker"
 
 export function DatePickerWithRange() {
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), 0, 20),
-    to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+    from: new Date(),
+    to: new Date(),
   })
+
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Field className="flex w-max flex-row items-center gap-3">
@@ -25,7 +27,7 @@ export function DatePickerWithRange() {
       >
         Date Range:
       </FieldLabel>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger>
           <Button variant={"outline"}>
             <span className="flex-1 text-left text-xs font-medium text-black/50">
@@ -51,7 +53,7 @@ export function DatePickerWithRange() {
             defaultMonth={date?.from}
             selected={date}
             onSelect={setDate}
-            numberOfMonths={2}
+            numberOfMonths={1}
           />
         </PopoverContent>
       </Popover>

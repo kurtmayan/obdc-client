@@ -174,7 +174,7 @@ export function ChartTooltipIndicatorNone() {
               <Bar
                 dataKey="pending"
                 stackId="a"
-                fill="#E74C3C"
+                fill="#FFB266"
                 radius={[0, 0, 8, 8]}
               />
               <Bar

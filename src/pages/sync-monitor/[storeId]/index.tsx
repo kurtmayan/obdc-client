@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router"
 import { useQuery } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { capitalize } from "@/lib/capitalize"
-import type { Store } from ".."
+import type { Store } from "@/types/sync.type"
 
 export type SyncLog = {
   id: string
@@ -100,19 +100,16 @@ export default function SyncMonitorStoreView() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-black">
-                Store {storeDataFiltered?.name}{" "}
-                {storeDataFiltered?.municipality}
+                {storeDataFiltered?.name}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
       <div className="bg-white px-6 py-5">
-        <h2 className="text-2xl font-medium">
-          Store {storeDataFiltered?.name} {storeDataFiltered?.municipality}
-        </h2>
+        <h2 className="text-2xl font-medium">{storeDataFiltered?.name}</h2>
         <p className="text-xs font-normal text-[#8A96A3]">
-          Store ID: {storeDataFiltered?.code}
+          Location: {storeDataFiltered?.location}
         </p>
         <div className="mt-4 flex gap-5">
           <div>
@@ -120,15 +117,24 @@ export default function SyncMonitorStoreView() {
               Device Model
             </p>
             <p className="text-sm font-normal">
-              {storeDataFiltered?.devices[0].model}
+              {storeDataFiltered?.devices[0]?.model ? (
+                storeDataFiltered.devices[0].model
+              ) : (
+                <p className="text-sm">No device Connected</p>
+              )}
             </p>
           </div>
           <div>
             <p className="text-xs font-normal text-[#1F1F1F80]/50">Status</p>
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-green-500" />
-              <p className="text-sm font-normal">Synced</p>
-            </div>
+
+            {storeDataFiltered?.devices[0]?.model ? (
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-green-500" />
+                <p className="text-sm font-normal">Synced</p>
+              </div>
+            ) : (
+              <p className="text-sm">Not Synced</p>
+            )}
           </div>
         </div>
       </div>

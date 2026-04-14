@@ -22,7 +22,7 @@ export default function ExportIcon(props: SVGProps<SVGSVGElement>) {
         d="M28.32,16.35a1,1,0,0,0-1.41,1.41L30.16,21H18a1,1,0,0,0,0,2H30.19l-3.28,3.28a1,1,0,1,0,1.41,1.41L34,22Z"
         className="clr-i-outline clr-i-outline-path-2"
       ></path>
-      <rect x="0" y="0" width="36" height="36" fill-opacity="0" />
+      <rect x="0" y="0" width="36" height="36" fillOpacity="0" />
     </svg>
   )
 }
