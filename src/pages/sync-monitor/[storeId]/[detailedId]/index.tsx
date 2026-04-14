@@ -26,9 +26,9 @@ import {
 import SearchIcon from "@/components/icons/search-icon"
 import { useNavigate, useParams } from "react-router"
 import { useQuery } from "@tanstack/react-query"
-import type { Store } from "../.."
 import type { SyncLog } from ".."
 import { useState } from "react"
+import type { Store } from "@/types/sync.type"
 
 type AttendanceRecord = {
   id: string
@@ -133,7 +133,7 @@ export default function SyncMonitorDetailedView() {
                 className="cursor-pointer text-sm font-medium text-black/50"
                 onClick={() => navigate(-1)}
               >
-                Store {store.name} {store.municipality}
+                {store.name}
               </BreadcrumbPage>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -148,11 +148,9 @@ export default function SyncMonitorDetailedView() {
 
       {/* Store Info */}
       <div className="bg-white px-6 py-5">
-        <h2 className="text-2xl font-medium">
-          Store {store.name} {store.municipality}
-        </h2>
+        <h2 className="text-2xl font-medium">{store.name}</h2>
         <p className="text-xs font-normal text-[#8A96A3]">
-          Store ID: {store.code}
+          Location: {store.location}
         </p>
         <div className="mt-4 flex gap-5">
           <div>
@@ -223,7 +221,7 @@ export default function SyncMonitorDetailedView() {
                           {employeeName}
                         </p>
                         <p className="text-xs font-normal text-[#8A96A3]">
-                          User ID: {userId}
+                          Employee ID: {userId}
                         </p>
                       </div>
                     </div>

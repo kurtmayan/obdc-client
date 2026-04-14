@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -22,6 +24,15 @@ import { Calendar } from "./ui/calendar"
 import type { DateRange } from "react-day-picker"
 
 const chartConfig = {
+  synced: {
+    label: "Synced",
+    color: "var(--chart-2)",
+  },
+  pending: {
+    label: "Pending",
+    color: "var(--chart-1)",
+  },
+
   running: {
     label: "Synced",
     color: "var(--chart-1)",
@@ -154,13 +165,13 @@ export function ChartTooltipIndicatorNone() {
                   fontWeight: 400,
                 }}
               />
-
+              <ChartLegend content={<ChartLegendContent />} />
               <YAxis
                 domain={[0, maxTotal]}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickCount={5}
+                tickCount={maxTotal}
                 tick={{
                   fill: "#9CA2AD",
                   fontSize: 13.42,
