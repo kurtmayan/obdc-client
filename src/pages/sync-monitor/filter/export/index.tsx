@@ -42,7 +42,7 @@ export default function Export() {
       if (date?.to) params.append("endDate", formatLocalDate(date.to))
 
       const response = await fetch(
-        `http://localhost:3000/sync/export?${params.toString()}`
+        `${import.meta.env.VITE_SERVER_URL}/sync/export?${params.toString()}`
       )
 
       if (!response.ok) {
