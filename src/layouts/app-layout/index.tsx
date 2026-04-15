@@ -28,7 +28,7 @@ export default function AppLayout() {
         <div className="mt-5 flex items-center justify-center gap-2 py-6">
           <img src="/app-logo.svg" className="h-13 w-13" />
           <h1 className="text-[20px] font-semibold text-white">
-            Mr. DIY O-BDC
+            Biometric Consolidator
           </h1>
         </div>
         <div className="flex flex-col gap-3 px-3 py-6">

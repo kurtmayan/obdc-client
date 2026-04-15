@@ -1,12 +1,5 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -18,7 +11,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Button } from "./ui/button"
-import { addDays, format, subDays } from "date-fns"
+import { format, subDays } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { Calendar } from "./ui/calendar"
 import type { DateRange } from "react-day-picker"
