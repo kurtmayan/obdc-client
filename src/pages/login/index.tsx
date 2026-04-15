@@ -9,7 +9,7 @@ import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
 import { TriangleAlert } from "lucide-react"
 import { useState } from "react"
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 import type { ErrorResponse } from "@/types/error.type"
 
 type LoginType = {
@@ -83,7 +83,7 @@ export default function LoginPage() {
     >
       <div className="text-center">
         <p className="mx-auto mb-3 w-[50%] text-xl font-bold text-[#5A2E15]">
-          Biometrics Data Consolidator
+          Biometric Data Consolidator
         </p>
         <p className="text-[#8A96A3]">Sign in to O-BDC Portal</p>
       </div>
@@ -180,13 +180,12 @@ export default function LoginPage() {
               )}
             />
           </FieldGroup>
-          <Button
-            variant={"link"}
-            className="text-[13px] font-medium text-navy-blue underline"
-            disabled={form.state.isSubmitting}
+          <Link
+            to={"/auth/forgot-password"}
+            className="text-[13px] font-medium text-navy-blue underline underline-offset-4 hover:underline"
           >
             Forgot password?
-          </Button>
+          </Link>
         </div>
         <Button
           size={"lg"}
