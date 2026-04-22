@@ -34,6 +34,8 @@ export default function UpdatePasswordPage() {
   const navigation = useNavigate()
   const searchParams = new URLSearchParams(location.search)
 
+  const userEmail = searchParams.get("email") ?? ""
+
   const [passwordEye, setPasswordEye] = useState({
     newPassword: false,
     confirmNewPassword: false,
@@ -48,7 +50,7 @@ export default function UpdatePasswordPage() {
   >({
     mutationFn: async (credentials) => {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/reset-password`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/update-password`,
         {
           method: "POST",
           headers: {
@@ -105,7 +107,7 @@ export default function UpdatePasswordPage() {
       <Card className="z-10 w-94.25 p-5 text-center">
         <CardHeader>
           <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
-            Hi [User Name]! <br />
+            Hi {userEmail} <br />
             Let’s update your password.
           </CardTitle>
           <CardDescription className="text-[#8A96A3]">
