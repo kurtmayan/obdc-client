@@ -50,7 +50,7 @@ export default function UpdatePasswordPage() {
   >({
     mutationFn: async (credentials) => {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/update-password`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/reset-password`,
         {
           method: "POST",
           headers: {
