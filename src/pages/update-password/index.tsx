@@ -107,7 +107,7 @@ export default function UpdatePasswordPage() {
       <Card className="z-10 w-94.25 p-5 text-center">
         <CardHeader>
           <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
-            Hi {userEmail} <br />
+            Hi {userEmail}! <br />
             Let’s update your password.
           </CardTitle>
           <CardDescription className="text-[#8A96A3]">
