@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import ExportIcon from "@/components/icons/export-icon"
 import { Input } from "@/components/ui/input"
@@ -20,8 +20,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { DateRange } from "react-day-picker"
 import { addDays } from "date-fns"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function Export() {
+  const [isExporting, setIsExporting] = useState(false)
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), 0, 20),
     to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
@@ -35,6 +37,7 @@ export default function Export() {
   }
 
   const exportData = async () => {
+    setIsExporting(true)
     try {
       const params = new URLSearchParams()
 
@@ -61,23 +64,25 @@ export default function Export() {
       setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (error) {
       console.error("Fetch failed:", error)
+    } finally {
+      setIsExporting(false)
     }
   }
 
-  const stores = [
-    {
-      id: 1,
-      name: "Store #104 - Malolos",
-    },
-    {
-      id: 2,
-      name: "Store #108 - Guiguinto",
-    },
-    {
-      id: 3,
-      name: "Store #112 - Baliuag",
-    },
-  ]
+  // const stores = [
+  //   {
+  //     id: 1,
+  //     name: "Store #104 - Malolos",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Store #108 - Guiguinto",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Store #112 - Baliuag",
+  //   },
+  // ]
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -111,7 +116,7 @@ export default function Export() {
             {/* <Input id="sheet-demo-name" defaultValue="Pedro Duarte" /> */}
             <DatePickerWithRange date={date} onChange={setDate} />
           </div>
-          <div>
+          {/* <div>
             <div className="w-full max-w-md space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium">Target Locations</h3>
@@ -120,13 +125,11 @@ export default function Export() {
                 </Button>
               </div>
 
-              {/* The Search Input */}
               <div className="relative">
                 <Search className="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search stores..." className="pl-8" />
               </div>
 
-              {/* The List Container */}
               <div className="divide-y rounded-md border">
                 {stores.map((store) => (
                   <div
@@ -143,7 +146,8 @@ export default function Export() {
                 3 locations selected
               </p>
             </div>
-          </div>
+          </div> */}
+
           <div className="space-y-3">
             <Label className="text-base font-semibold text-slate-700">
               Export Format
@@ -185,8 +189,12 @@ export default function Export() {
                 Cancel
               </Button>
             </SheetClose>
-            <Button className="h-10 grow text-sm" onClick={exportData}>
-              Export
+            <Button
+              className="h-10 grow text-sm"
+              onClick={exportData}
+              disabled={isExporting}
+            >
+              {isExporting ? <Spinner /> : "Export"}
             </Button>
           </div>
         </SheetFooter>
