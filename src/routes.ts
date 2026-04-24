@@ -13,6 +13,7 @@ import TwoFactorAuthenticationPage from "./pages/2fa"
 import UserManagement from "./pages/user-management"
 import ForgotPasswordPage from "./pages/forgot-password"
 import UpdatePasswordPage from "./pages/update-password"
+import ManualDTRUpload from "./pages/manual-dtr-upload"
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +78,10 @@ export const router = createBrowserRouter([
             ],
           },
         ],
+      },
+      {
+        path: "/manual-dtr-upload",
+        Component: ManualDTRUpload,
       },
     ],
   },
