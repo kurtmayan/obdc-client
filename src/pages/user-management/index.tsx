@@ -71,7 +71,7 @@ const tableHeader = [
 
 export default function UserManagement() {
   const { data } = useQuery<User[]>({
-    queryKey: ["sync-data"],
+    queryKey: ["user-management"],
     queryFn: async () => {
       const data = await fetch(`${import.meta.env.VITE_SERVER_URL}/users`, {
         headers: {

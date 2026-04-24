@@ -51,7 +51,7 @@ export default function SyncMonitorStoreView() {
     isLoading: storeLoading,
     isError: storeError,
   } = useQuery<Store[]>({
-    queryKey: ["sync-data"],
+    queryKey: ["attendance"],
     queryFn: async () => {
       const data = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/attendance/store`
@@ -65,7 +65,7 @@ export default function SyncMonitorStoreView() {
     isLoading: logsLoading,
     isError: logsError,
   } = useQuery<SyncLog[]>({
-    queryKey: ["sync-data", storeId],
+    queryKey: ["attendance-store", storeId],
     queryFn: async () => {
       const data = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
