@@ -1,6 +1,7 @@
 import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import UsersIcon from "@/components/icons/users-icon"
+import type { ValidateTypeResponse } from "@/components/protected-route"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,9 +11,31 @@ import {
 } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
+  const { data: authData } = useQuery<ValidateTypeResponse>({
+    queryKey: ["auth"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   const navLinks = [
     { label: "Dashboard", url: "/", icon: OverviewIcon },
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
@@ -62,9 +85,11 @@ export default function AppLayout() {
                 </Avatar>
                 <div>
                   <p className="text-sm font-semibold text-[#ffffff]">
-                    Juan Dela Cruz
+                    {authData?.firstName} {authData?.lastName}
                   </p>
-                  <p className="text-xs font-normal text-[#ffffff]/60">Admin</p>
+                  <p className="text-left text-xs font-normal text-[#ffffff]/60">
+                    Admin
+                  </p>
                 </div>
               </div>
             </PopoverTrigger>
