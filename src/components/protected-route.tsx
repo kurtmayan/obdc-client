@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Navigate, Outlet, useLocation } from "react-router"
 
-type ValidateTypeResponse = {
+export type ValidateTypeResponse = {
   sub: string
   email: string
   role: string
