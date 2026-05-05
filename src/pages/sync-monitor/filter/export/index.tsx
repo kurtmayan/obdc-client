@@ -17,15 +17,14 @@ import { CircleAlert, FileSpreadsheet, FileText, Hourglass } from "lucide-react"
 import { DatePickerWithRange } from "./date-range"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { DateRange } from "react-day-picker"
-import { addDays } from "date-fns"
 import { Spinner } from "@/components/ui/spinner"
 import { useMutation } from "@tanstack/react-query"
 import { Progress } from "@/components/ui/progress"
 
 export default function Export() {
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), 0, 20),
-    to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+    from: new Date(),
+    to: new Date(),
   })
   const [progress, setProgress] = React.useState(0)
 
@@ -34,6 +33,13 @@ export default function Export() {
     const month = String(date.getMonth() + 1).padStart(2, "0")
     const day = String(date.getDate()).padStart(2, "0")
     return `${year}-${month}-${day}`
+  }
+
+  const isDateDisabled = (checkDate: Date): boolean => {
+    if (!date?.from) return false
+    const timeDiff = checkDate.getTime() - date.from.getTime()
+    const daysDiff = timeDiff / (1000 * 60 * 60 * 24)
+    return daysDiff < 0 || daysDiff > 31
   }
 
   const exportMutation = useMutation({
@@ -147,7 +153,11 @@ export default function Export() {
             <Label htmlFor="sheet-demo-name" className="font-medium">
               Date Range
             </Label>
-            <DatePickerWithRange date={date} onChange={setDate} />
+            <DatePickerWithRange
+              date={date}
+              onChange={setDate}
+              disabled={isDateDisabled}
+            />
           </div>
 
           <div className="space-y-3">
