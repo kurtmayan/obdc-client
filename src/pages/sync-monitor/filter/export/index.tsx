@@ -24,6 +24,7 @@ import { useMutation } from "@tanstack/react-query"
 import { format } from "date-fns"
 
 export default function Export() {
+  const [isOpen, setIsOpen] = React.useState(false)
   const [progress, setProgress] = React.useState(0)
 
   const exportMutation = useMutation({
@@ -102,8 +103,19 @@ export default function Export() {
     return () => clearInterval(interval)
   }, [exportMutation.isPending])
 
+  React.useEffect(() => {
+    if (progress === 100) {
+      setTimeout(() => {
+        form.reset()
+        exportMutation.reset()
+        setIsOpen(false)
+        setProgress(0)
+      }, 1000)
+    }
+  }, [progress, form, exportMutation])
+
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button className="h-10 w-30.25">
           <ExportIcon height={18} width={18} />
