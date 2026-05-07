@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Mail, Phone, UserPlus } from "lucide-react"
 import { FieldLabel } from "@/components/ui/field"
@@ -31,7 +32,7 @@ type InviteUserType = {
   lastName: string
   role: "SUPERADMIN" | "HR" | "MP"
   email: string
-  contactNumber: string
+  contactNumber?: string
 }
 
 type InviteUserResponse = {
@@ -39,6 +40,8 @@ type InviteUserResponse = {
 }
 
 export default function InviteUser() {
+  const [isOpen, setIsOpen] = useState(false)
+
   const postInviteUser = useMutation<
     InviteUserResponse,
     ErrorResponse,
@@ -76,6 +79,8 @@ export default function InviteUser() {
       try {
         const response = await postInviteUser.mutateAsync(value)
         if (response.message === "User invited successfully") {
+          form.reset()
+          setIsOpen(false)
           return toast.success(response.message)
         }
         return toast.error("Something went wrong")
@@ -86,7 +91,7 @@ export default function InviteUser() {
     },
   })
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger className="flex h-10 w-[138.5px] items-center justify-center gap-2 rounded-[6px] bg-yellow-500 p-2 px-4">
         <UserPlus />
         <p className="text-sm font-semibold text-navy-blue"> Invite User</p>
@@ -162,7 +167,7 @@ export default function InviteUser() {
                   <FieldLabel htmlFor="role" className="text-navy-blue">
                     Role
                   </FieldLabel>
-                  <Select>
+                  <Select disabled={form.state.isSubmitting}>
                     <SelectTrigger className="h-11 w-full">
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
@@ -209,13 +214,13 @@ export default function InviteUser() {
               name="contactNumber"
               validators={{
                 onBlur: ({ value }) => {
-                  if (!/^9\d{9}$/.test(value)) {
+                  if (value && !/^9\d{9}$/.test(value)) {
                     return "Enter a valid PH number (9XXXXXXXXX)"
                   }
                   return undefined
                 },
                 onSubmit: ({ value }) => {
-                  if (!/^9\d{9}$/.test(value)) {
+                  if (value && !/^9\d{9}$/.test(value)) {
                     return "Enter a valid PH number (9XXXXXXXXX)"
                   }
                   return undefined
@@ -227,7 +232,7 @@ export default function InviteUser() {
                     htmlFor="contactNumber"
                     className="text-navy-blue"
                   >
-                    Contact Number
+                    Contact Number (optional)
                   </FieldLabel>
                   <div className="relative flex items-center">
                     <Phone className="absolute left-3 h-4 w-4 text-gray-400" />
@@ -238,7 +243,7 @@ export default function InviteUser() {
                       id="contactNumber"
                       autoComplete="off"
                       placeholder="9XXXXXXXXX"
-                      className="h-11 pl-[70px] text-navy-blue"
+                      className="h-11 pl-17.5 text-navy-blue"
                       value={state.value}
                       onBlur={handleBlur}
                       onChange={(e) => {
@@ -263,7 +268,11 @@ export default function InviteUser() {
                 Cancel
               </Button>
             </SheetClose>
-            <Button className="h-10 grow text-sm" onClick={form.handleSubmit}>
+            <Button
+              className="h-10 grow text-sm"
+              onClick={form.handleSubmit}
+              disabled={form.state.isSubmitting}
+            >
               Invite User
             </Button>
           </div>
