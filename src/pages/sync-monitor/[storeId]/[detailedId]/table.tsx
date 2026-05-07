@@ -1,0 +1,96 @@
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
+import type { ColumnDef } from "@tanstack/react-table"
+import { formatDate } from "date-fns/format"
+import TableData from "@/components/custom/table"
+
+type AttendanceRecord = {
+  id: string
+  userId?: string
+  employeeName: string
+  createdAt: Date
+  updatedAt: Date
+  logType: "timeIn" | "timeOut"
+  logDate: Date
+  storeSyncRecordID: string
+}
+
+export type StoreSyncRecordWithAttendance = {
+  id: string
+  syncDate: Date
+  storesId: Date
+  attendanceRecord: AttendanceRecord[]
+}
+
+export default function DetailedViewTable({
+  storeId,
+  detailedId,
+}: {
+  storeId: string
+  detailedId: string
+}) {
+  const { data: attendanceData } = useQuery<StoreSyncRecordWithAttendance>({
+    queryKey: ["attendance", storeId, detailedId],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+      )
+      return res.json()
+    },
+    enabled: !!storeId && !!detailedId,
+  })
+
+  const columns = useMemo<ColumnDef<AttendanceRecord>[]>(
+    () => [
+      {
+        accessorKey: "employeeName",
+        header: "Employee",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 text-left">
+            <div>
+              <p className="text-sm font-semibold text-navy-blue">
+                {row.original.employeeName}
+              </p>
+              <p className="text-xs font-normal text-[#8A96A3]">
+                Employee ID: {row.original.userId}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "logType",
+        header: () => (
+          <p className="text-left text-sm font-semibold text-navy-blue">Mode</p>
+        ),
+        cell: ({ row }) => (
+          <p className="text-left text-sm font-semibold text-navy-blue">
+            {row.original.logType ? "Time Out" : "Time In"}
+          </p>
+        ),
+      },
+      {
+        accessorKey: "logDate",
+        header: "Date",
+        cell: ({ row }) => (
+          <div className="grid place-items-center">
+            <p className="text-sm font-medium text-navy-blue">
+              {formatDate(row.original.logDate, "hh:mm a")}
+            </p>
+            <p className="text-xs font-normal text-[#8A96A3]">
+              {formatDate(row.original.logDate, "MMMM d, yyyy")}
+            </p>
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
+  return (
+    <TableData
+      columns={columns}
+      data={attendanceData?.attendanceRecord || []}
+    />
+  )
+}

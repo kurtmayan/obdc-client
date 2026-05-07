@@ -34,7 +34,7 @@ export default function Dashboard() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-row items-center justify-between">
         <div className="grid gap-2">
-          <p className="text- text-2xl font-bold">Sync Sync Overview</p>
+          <p className="text- text-2xl font-bold">Dashboard Overview</p>
           <p className="text-sm text-[#8A96A3]">Overview of all stores</p>
         </div>
       </div>

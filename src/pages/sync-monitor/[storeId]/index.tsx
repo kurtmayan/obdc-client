@@ -1,12 +1,4 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -14,14 +6,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
-import EyeIcon from "@/components/icons/eye-icon"
-import { formatDate } from "date-fns"
 import { useNavigate, useParams } from "react-router"
 import { useQuery } from "@tanstack/react-query"
-import { Badge } from "@/components/ui/badge"
-import { capitalize } from "@/lib/capitalize"
 import type { Store } from "@/types/sync.type"
+import StoreViewTable from "./table"
 
 export type SyncLog = {
   id: string
@@ -31,16 +19,6 @@ export type SyncLog = {
   pending: number
   totalRecord: number
 }
-
-const tableHeader = [
-  "log date",
-  "total record",
-  "synced",
-  "pending",
-  "last sync",
-  "status",
-  "action",
-]
 
 export default function SyncMonitorStoreView() {
   const navigate = useNavigate()
@@ -139,97 +117,7 @@ export default function SyncMonitorStoreView() {
         </div>
       </div>
       <div className="bg-white px-6 py-5">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-[#F6F7F9]">
-              {tableHeader.map((header) => (
-                <TableHead
-                  className="text-center text-xs font-semibold tracking-[0.5px] text-navy-blue uppercase first:text-left"
-                  key={header}
-                >
-                  {header}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {dataSyncLog?.map(
-              (
-                { id, logDate, totalRecord, pending, lastSync, status },
-                index
-              ) => {
-                return (
-                  <TableRow key={index} className="h-16">
-                    <TableCell className="items-center gap-2">
-                      <p className="text-xs font-semibold text-navy-blue">
-                        {formatDate(logDate, "MMMM d, yyyy")}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <p className="text-xs font-medium text-navy-blue">
-                          {totalRecord}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <p className="text-xs font-medium text-navy-blue">
-                            {totalRecord}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <p className="text-xs font-medium text-navy-blue">
-                            {pending}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <p className="text-xs font-medium text-navy-blue">
-                            {formatDate(lastSync, "MMMM d, yyyy, h:mm:ss a")}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <Badge
-                            className={`flex items-center gap-1 bg-green-400 text-white`}
-                          >
-                            {capitalize(status)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="grid place-items-center">
-                        <div>
-                          <Button
-                            variant={"outline"}
-                            onClick={() =>
-                              navigate(`/sync-monitor/${storeId}/${id}`)
-                            }
-                          >
-                            <EyeIcon />
-                          </Button>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              }
-            )}
-          </TableBody>
-        </Table>
+        <StoreViewTable storeId={storeId!} />
       </div>
     </div>
   )
