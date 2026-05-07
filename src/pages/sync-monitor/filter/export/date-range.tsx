@@ -13,9 +13,11 @@ import {
 export function DatePickerWithRange({
   date,
   onChange,
+  disabled,
 }: {
   date: DateRange | undefined
   onChange: (date: DateRange | undefined) => void
+  disabled?: (date: Date) => boolean
 }) {
   return (
     <Popover>
@@ -46,8 +48,9 @@ export function DatePickerWithRange({
           mode="range"
           defaultMonth={date?.from}
           selected={date}
-          onSelect={onChange} // 👈 use prop
+          onSelect={onChange}
           numberOfMonths={2}
+          disabled={disabled}
         />
       </PopoverContent>
     </Popover>
