@@ -52,14 +52,12 @@ export function ChartTooltipIndicatorNone() {
     queryKey: ["statistics/datasets", date?.from, date?.to],
     queryFn: async () => {
       const params = new URLSearchParams()
-
       if (date?.from) {
         params.set("startDate", format(date.from, "yyyy-MM-dd"))
       }
       if (date?.to) {
         params.set("endDate", format(date.to, "yyyy-MM-dd"))
       }
-
       const res = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/statistics/datasets?${params.toString()}`,
         {
@@ -82,14 +80,9 @@ export function ChartTooltipIndicatorNone() {
     0,
     ...(dataStatistic?.map((d) => d.synced + d.pending) ?? [])
   )
-
-  console.log(dataStatistic)
-
   const dataStatistics = dataStatistic.filter((item) => {
     if (!date?.from || !date?.to) return true
-
     const itemDate = new Date(item.date + "T00:00:00")
-
     return itemDate >= date.from && itemDate <= date.to
   })
 

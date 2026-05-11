@@ -1,9 +1,9 @@
 import Filter from "./filter"
 import { Outlet, useParams } from "react-router"
-import SyncMonitorTable from "./table"
 import { Button } from "@/components/ui/button"
 import { RefreshCcw } from "lucide-react"
 import { queryClient } from "@/queryClient"
+import SyncMonitorTable from "./table"
 
 export default function SyncMonitor() {
   const { storeId } = useParams<{ storeId?: string }>()

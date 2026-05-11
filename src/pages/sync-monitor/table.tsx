@@ -1,26 +1,13 @@
+import { useEffect, useMemo } from "react"
+import TableData from "@/components/custom/table"
+import type { Cluster, Division } from "@/types/sync.type"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type Updater,
-} from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import type { ColumnDef } from "@tanstack/react-table"
 import { format, formatDistanceToNow } from "date-fns"
 import { Link } from "react-router"
-import type { Cluster, Division, Store } from "@/types/sync.type"
-import { useFilterStore } from "@/store"
+import { useFilterStore } from "@/store/useSyncMonitor"
+import { Badge } from "@/components/ui/badge"
+import { CircleCheckBig } from "lucide-react"
 
 const clusterMap: Record<Cluster, string> = {
   head_office: "Head Office",
@@ -41,16 +28,41 @@ const divisionMap: Record<Division, string> = {
   warehouse: "Warehouse",
 }
 
+type Store = {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  code: string
+  name: string
+  division: Division
+  location: string
+  cluster: Cluster
+  contactPerson: string
+  contactNumber: string
+  status: "ACTIVE" | "INACTIVE"
+  storeSyncRecords: StoreSyncRecord[]
+  devices: Device[]
+}
+
+type StoreSyncRecord = {
+  id: string
+  syncDate: Date
+  storesId: string
+}
+
+type Device = {
+  id: string
+  model: string
+  serialNumber: string
+  storesId: string
+  createdAt: Date
+  updatedAt: Date
+}
+
 export default function SyncMonitorTable() {
-  const { columnFilters, setFilter } = useFilterStore()
+  const { columnFilters, clearFilters } = useFilterStore()
 
-  const handleFiltersChange = (updater: Updater<ColumnFiltersState>) => {
-    const next =
-      typeof updater === "function" ? updater(columnFilters) : updater
-    next.forEach((f) => setFilter(f.id, f.value))
-  }
-
-  const { data = [], isLoading } = useQuery<Store[]>({
+  const { data = [] } = useQuery<Store[]>({
     queryKey: ["stores"],
     queryFn: async () => {
       const res = await fetch(
@@ -66,14 +78,14 @@ export default function SyncMonitorTable() {
         accessorKey: "name",
         header: "Name",
         cell: ({ row }) => (
-          <p className="text-sm font-semibold text-navy-blue">
+          <p className="text-left text-sm font-semibold text-navy-blue">
             {row.original.name}
           </p>
         ),
       },
       {
         accessorKey: "location",
-        header: () => <p className="text-start">Location</p>,
+        header: "Location",
         cell: ({ row }) => (
           <p className="text-navy-blue">{row.original.location}</p>
         ),
@@ -86,6 +98,9 @@ export default function SyncMonitorTable() {
             {clusterMap[row.original.cluster]}
           </p>
         ),
+        filterFn: (row, filterValue) => {
+          return row.original.cluster === filterValue
+        },
       },
       {
         accessorKey: "division",
@@ -95,6 +110,9 @@ export default function SyncMonitorTable() {
             {divisionMap[row.original.division]}
           </p>
         ),
+        filterFn: (row, filterValue) => {
+          return row.original.division === filterValue
+        },
       },
       {
         accessorKey: "lastSync",
@@ -121,6 +139,19 @@ export default function SyncMonitorTable() {
         ),
       },
       {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          return (
+            row.original.storeSyncRecords.length != 0 && (
+              <Badge className="bg-[#D4FDE7] text-xs font-semibold text-[#00662D]">
+                <CircleCheckBig color="#00662D" /> Synced
+              </Badge>
+            )
+          )
+        },
+      },
+      {
         accessorKey: "actions",
         header: "Actions",
         cell: ({ row }) => (
@@ -138,65 +169,11 @@ export default function SyncMonitorTable() {
     []
   )
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    state: { columnFilters },
-    onColumnFiltersChange: handleFiltersChange,
-    getFilteredRowModel: getFilteredRowModel(),
-  })
+  useEffect(() => {
+    return () => clearFilters()
+  }, [])
 
   return (
-    <Table>
-      <TableHeader className="bg-muted/75">
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id} className="bg-[#F6F7F9]">
-            {headerGroup.headers.map((header) => (
-              <TableHead
-                key={header.id}
-                className="text-center text-xs font-semibold tracking-[0.5px] text-navy-blue uppercase first:text-left"
-              >
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {isLoading ? (
-          <TableRow>
-            <TableCell
-              colSpan={columns.length}
-              className="py-10 text-center text-sm text-gray-500"
-            >
-              Loading...
-            </TableCell>
-          </TableRow>
-        ) : table.getRowModel().rows.length > 0 ? (
-          table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))
-        ) : (
-          <TableRow>
-            <TableCell
-              colSpan={columns.length}
-              className="py-10 text-center text-sm text-gray-500"
-            >
-              No Data Available!
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <TableData columns={columns} data={data} columnFilters={columnFilters} />
   )
 }
