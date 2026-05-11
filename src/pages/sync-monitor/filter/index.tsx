@@ -7,9 +7,10 @@ export default function Filter() {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
+        {/* TODO: Cluster depends on the selected division */}
         <DatePickerWithRange />
-        <Cluster />
         <Division />
+        <Cluster />
         {/* <Status /> */}
       </div>
       <Export />

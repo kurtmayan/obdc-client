@@ -60,7 +60,9 @@ type Device = {
 }
 
 export default function SyncMonitorTable() {
-  const { columnFilters, clearFilters } = useFilterStore()
+  const { clearFilters } = useFilterStore()
+
+  const columnFilters = useFilterStore((s) => s.columnFilters)
 
   const { data = [] } = useQuery<Store[]>({
     queryKey: ["stores"],
@@ -98,7 +100,7 @@ export default function SyncMonitorTable() {
             {clusterMap[row.original.cluster]}
           </p>
         ),
-        filterFn: (row, filterValue) => {
+        filterFn: (row, _, filterValue) => {
           return row.original.cluster === filterValue
         },
       },
@@ -110,7 +112,7 @@ export default function SyncMonitorTable() {
             {divisionMap[row.original.division]}
           </p>
         ),
-        filterFn: (row, filterValue) => {
+        filterFn: (row, _, filterValue) => {
           return row.original.division === filterValue
         },
       },

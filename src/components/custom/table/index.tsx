@@ -26,16 +26,13 @@ export interface TableDataProps<T> {
   columns: ColumnDef<T, unknown>[]
   itemsPerPage?: number
   onPaginationChange?: (data: { pageIndex: number; pageSize: number }) => void
-  onSearchRowCount?: (count: number) => void
   columnFilters?: Array<{ id: string; value: unknown }>
 }
 
 export default function TableData<T>({
   data,
   columns,
-  itemsPerPage = 5,
-  onPaginationChange,
-  onSearchRowCount,
+  itemsPerPage = 7,
   columnFilters = [],
   ...props
 }: TableDataProps<T> & React.ComponentProps<"div">) {
@@ -46,8 +43,6 @@ export default function TableData<T>({
     pageIndex: 0,
     pageSize: itemsPerPage,
   })
-
-  const columnFiltersKey = JSON.stringify(columnFilters)
 
   const table = useReactTable({
     data,
@@ -64,6 +59,7 @@ export default function TableData<T>({
     enableGlobalFilter: true,
     enableColumnFilters: true,
     onGlobalFilterChange: setSearchQuery,
+    onColumnFiltersChange: () => {},
     getFilteredRowModel: getFilteredRowModel(),
   })
 
@@ -77,25 +73,6 @@ export default function TableData<T>({
       resetSearch()
     }
   }, [])
-
-  useEffect(() => {
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }, [searchQuery, columnFiltersKey])
-
-  useEffect(() => {
-    if (onPaginationChange) {
-      onPaginationChange(pagination)
-    }
-    if (onSearchRowCount) {
-      onSearchRowCount(table.getFilteredRowModel().rows.length)
-    }
-  }, [
-    pagination,
-    onPaginationChange,
-    onSearchRowCount,
-    searchQuery,
-    columnFiltersKey,
-  ])
 
   return (
     <div className="w-full" {...props}>
