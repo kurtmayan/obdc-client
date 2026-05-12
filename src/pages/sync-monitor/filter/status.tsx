@@ -20,10 +20,9 @@ export default function Status() {
         Status:
       </FieldLabel>
       <Select
-        onValueChange={(value) => {
-          console.log(value)
+        onValueChange={(value) =>
           setFilter("status", value === "All" ? undefined : value)
-        }}
+        }
       >
         <SelectTrigger className="w-full max-w-48 text-xs font-medium text-black/50">
           <SelectValue placeholder="All" />
