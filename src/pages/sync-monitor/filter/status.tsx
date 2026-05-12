@@ -7,8 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useFilterStore } from "@/store/useSyncMonitor"
 
 export default function Status() {
+  const { setFilter } = useFilterStore()
   return (
     <Field className="flex w-max flex-row">
       <FieldLabel
@@ -17,16 +19,18 @@ export default function Status() {
       >
         Status:
       </FieldLabel>
-      <Select>
+      <Select
+        onValueChange={(value) =>
+          setFilter("status", value === "All" ? undefined : value)
+        }
+      >
         <SelectTrigger className="w-full max-w-48 text-xs font-medium text-black/50">
           <SelectValue placeholder="All" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="synced">Synced</SelectItem>
-            <SelectItem value="syncing">Syncing</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="All">All</SelectItem>
+            <SelectItem value="Synced">Synced</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>

@@ -2,6 +2,7 @@ import { DatePickerWithRange } from "./range-picker"
 import Division from "./division"
 import Cluster from "./cluster"
 import Export from "./export"
+import Status from "./status"
 
 export default function Filter() {
   return (
@@ -11,7 +12,7 @@ export default function Filter() {
         <DatePickerWithRange />
         <Division />
         <Cluster />
-        {/* <Status /> */}
+        <Status />
       </div>
       <Export />
     </div>

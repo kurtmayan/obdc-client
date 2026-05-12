@@ -152,6 +152,12 @@ export default function SyncMonitorTable() {
             )
           )
         },
+        filterFn: (row, _, filterValue) => {
+          return (
+            (row.original.storeSyncRecords.length != 0) ===
+            (filterValue === "Synced")
+          )
+        },
       },
       {
         accessorKey: "actions",
