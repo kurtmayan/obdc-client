@@ -21,6 +21,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application
+        run: npm run build
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
