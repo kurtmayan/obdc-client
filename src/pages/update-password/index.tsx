@@ -29,7 +29,6 @@ type UpdatePasswordType = {
 }
 
 export default function UpdatePasswordPage() {
-  const [isSuccess, setIsSuccess] = useState(false)
   const location = useLocation()
   const navigation = useNavigate()
   const searchParams = new URLSearchParams(location.search)
@@ -82,7 +81,6 @@ export default function UpdatePasswordPage() {
           newPassword: value.newPassword,
         })
         form.reset()
-        setIsSuccess(true)
         setTimeout(() => {
           navigation("/auth/login")
         }, 3000)
@@ -117,7 +115,7 @@ export default function UpdatePasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center">
-          {isSuccess && (
+          {postUpdatePassword.isSuccess && (
             <Alert className="mb-5 border-none bg-[#D4FDE7]">
               <AlertTitle className="text-center text-sm font-semibold text-[#00662D]">
                 Your password has been successfully updated. Redirecting to
@@ -215,7 +213,7 @@ export default function UpdatePasswordPage() {
                     name={field.name}
                     type={passwordEye.confirmNewPassword ? "text" : "password"}
                     placeholder="Confirm your new password"
-                    className="h-11 text-sm font-normal text-navy-blue"
+                    className="h-11 text-sm font-normal text-navy-blue placeholder:text-sm"
                     onChange={(e) => field.handleChange(e.target.value)}
                     value={field.state.value}
                     onBlur={field.handleBlur}
@@ -245,12 +243,29 @@ export default function UpdatePasswordPage() {
           </form.Field>
         </CardContent>
         <CardFooter className="flex flex-col border-none bg-transparent shadow-none outline-none">
-          <Button
-            className="h-11 w-full text-[15px] font-semibold"
-            disabled={form.state.isSubmitting}
+          <form.Subscribe
+            selector={(state) => ({
+              isSubmitting: state.isSubmitting,
+              newPassword: state.values.newPassword,
+              confirmNewPassword: state.values.confirmNewPassword,
+            })}
           >
-            Update Password
-          </Button>
+            {({ isSubmitting, newPassword, confirmNewPassword }) => (
+              <Button
+                className="h-11 w-full text-[15px] font-semibold"
+                disabled={
+                  isSubmitting ||
+                  !newPassword ||
+                  !confirmNewPassword ||
+                  newPassword.length < 6 ||
+                  newPassword !== confirmNewPassword
+                }
+                type="submit"
+              >
+                Update Password
+              </Button>
+            )}
+          </form.Subscribe>
         </CardFooter>
       </Card>
     </form>
