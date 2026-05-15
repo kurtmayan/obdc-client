@@ -80,7 +80,7 @@ export default function SyncMonitorDetailedView() {
 
   useEffect(() => {
     setQuery("")
-  }, [location.pathname, setQuery])
+  }, [setQuery])
 
   const isLoading = storeLoading || syncLoading || detailLoading
   const isError = storeError || syncError || detailError
