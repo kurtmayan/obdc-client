@@ -72,7 +72,7 @@ export default function TableData<T>({
     return () => {
       resetSearch()
     }
-  }, [])
+  }, [resetSearch])
 
   return (
     <div className="w-full" {...props}>
