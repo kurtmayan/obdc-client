@@ -44,6 +44,7 @@ export default function TwoFactorAuthenticationPage() {
           body: JSON.stringify(credentials),
         }
       )
+
       const data = await response.json()
       if (!response.ok) {
         throw data
