@@ -86,6 +86,9 @@ export default function InviteUser() {
         return toast.error("Something went wrong")
       } catch (err) {
         const error = err as ErrorResponse
+        if (error.message === "Forbidden resource") {
+          return toast.error("You don't have permission to perform this action")
+        }
         return toast.error(error.message ?? "Something went wrong")
       }
     },
