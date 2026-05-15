@@ -18,12 +18,10 @@ import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
 import { MoveLeft, User } from "lucide-react"
 import { useMutation } from "@tanstack/react-query"
-import { useState } from "react"
 import { useNavigate } from "react-router"
 import { toast } from "sonner"
 
 export default function ForgotPasswordPage() {
-  const [isSuccess, setIsSuccess] = useState(false)
   const navigate = useNavigate()
 
   const postSendPasswordLink = useMutation<
@@ -63,8 +61,6 @@ export default function ForgotPasswordPage() {
         await postSendPasswordLink.mutateAsync({
           email: value.email,
         })
-        setIsSuccess(true)
-        form.reset()
       } catch (err) {
         const error = err as ErrorResponse
         return toast.error(error.message ?? "Something went wrong")
@@ -95,7 +91,7 @@ export default function ForgotPasswordPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center">
-          {isSuccess && (
+          {postSendPasswordLink.isSuccess && (
             <Alert className="mb-5 border-none bg-[#D4FDE7]">
               <AlertTitle className="text-center text-sm font-semibold text-[#00662D]">
                 A password reset link has been sent to your email.
@@ -131,6 +127,7 @@ export default function ForgotPasswordPage() {
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
+                    type="email"
                     placeholder="admin@mrdiy.com"
                     className="text-sm font-normal text-navy-blue"
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -141,17 +138,36 @@ export default function ForgotPasswordPage() {
                     <User />
                   </InputGroupAddon>
                 </InputGroup>
+                {field.state.meta.errors.length > 0 && (
+                  <p className="mt-1 self-start text-xs text-red-500">
+                    {field.state.meta.errors[0]}
+                  </p>
+                )}
               </>
             )}
           </form.Field>
         </CardContent>
         <CardFooter className="flex flex-col border-none bg-transparent shadow-none outline-none">
-          <Button
-            className="h-11 w-full text-[15px] font-semibold"
-            disabled={form.state.isSubmitting}
+          <form.Subscribe
+            selector={(state) => ({
+              isSubmitting: state.isSubmitting,
+              email: state.values.email,
+            })}
           >
-            Send password reset link
-          </Button>
+            {({ isSubmitting, email }) => (
+              <Button
+                className="h-11 w-full text-[15px] font-semibold"
+                disabled={
+                  isSubmitting ||
+                  !email ||
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                }
+                type="submit"
+              >
+                Send password reset link
+              </Button>
+            )}
+          </form.Subscribe>
           <div className="mt-7 flex w-full justify-between">
             <Button
               variant={"link"}
@@ -161,9 +177,16 @@ export default function ForgotPasswordPage() {
             >
               <MoveLeft /> Back to login
             </Button>
-            <Button variant={"link"} className="text-navy-blue" type="button">
-              Resend link
-            </Button>
+            {postSendPasswordLink.isSuccess && (
+              <Button
+                variant={"link"}
+                onClick={form.handleSubmit}
+                className="text-[13px] font-medium text-navy-blue"
+                type="button"
+              >
+                Resend link
+              </Button>
+            )}
           </div>
         </CardFooter>
       </Card>
