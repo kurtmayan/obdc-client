@@ -97,7 +97,7 @@ export default function StoreViewTable({ storeId }: { storeId: string }) {
         ),
       },
     ],
-    []
+    [storeId]
   )
 
   return <TableData columns={columns} data={dataSyncLog ?? []} />

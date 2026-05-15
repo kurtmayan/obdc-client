@@ -179,7 +179,7 @@ export default function SyncMonitorTable() {
 
   useEffect(() => {
     return () => clearFilters()
-  }, [])
+  }, [clearFilters])
 
   return (
     <TableData columns={columns} data={data} columnFilters={columnFilters} />
