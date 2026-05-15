@@ -67,6 +67,7 @@ export default function LoginPage() {
         }
         return setErrorMessage(true)
       } catch (err) {
+        console.log(err)
         return setErrorMessage(true)
       }
     },
