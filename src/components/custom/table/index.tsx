@@ -32,7 +32,7 @@ export interface TableDataProps<T> {
 export default function TableData<T>({
   data,
   columns,
-  itemsPerPage = 7,
+  itemsPerPage = 20,
   columnFilters = [],
   ...props
 }: TableDataProps<T> & React.ComponentProps<"div">) {
@@ -100,7 +100,7 @@ export default function TableData<T>({
               {row.getVisibleCells().map((cell, index) => (
                 <TableCell
                   key={index}
-                  className="py-7 text-center text-sm text-gray-500"
+                  className="py-5 text-center text-sm text-gray-500"
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
