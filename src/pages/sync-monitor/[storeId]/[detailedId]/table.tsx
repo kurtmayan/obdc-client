@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { formatDate } from "date-fns/format"
-import { parse, format } from "date-fns"
 import TableData from "@/components/custom/table"
 
 import { formatInTimeZone } from "date-fns-tz"

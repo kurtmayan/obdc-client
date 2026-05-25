@@ -7,13 +7,7 @@ import { format, formatDistanceToNow } from "date-fns"
 import { Link } from "react-router"
 import { useFilterStore } from "@/store/useSyncMonitor"
 import { Badge } from "@/components/ui/badge"
-import {
-  CircleAlert,
-  CircleCheck,
-  CircleCheckBig,
-  ClockFading,
-  Loader,
-} from "lucide-react"
+import { CircleAlert, CircleCheck, ClockFading, Loader } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const clusterMap: Record<Cluster, string> = {
