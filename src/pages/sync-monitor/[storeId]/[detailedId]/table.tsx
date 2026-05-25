@@ -10,7 +10,7 @@ type AttendanceRecord = {
   employeeName: string
   createdAt: Date
   updatedAt: Date
-  logType: "timeIn" | "timeOut"
+  logType: number
   logDate: Date
   storeSyncRecordID: string
 }
@@ -65,7 +65,13 @@ export default function DetailedViewTable({
         ),
         cell: ({ row }) => (
           <p className="text-left text-sm font-semibold text-navy-blue">
-            {row.original.logType ? "Time Out" : "Time In"}
+            {row.original.logType == 0
+              ? "Time In"
+              : row.original.logType == 1
+                ? "Time Out"
+                : row.original.logType == 2
+                  ? "Undefined"
+                  : "Undefined"}
           </p>
         ),
       },
