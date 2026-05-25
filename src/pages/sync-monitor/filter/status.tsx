@@ -32,7 +32,7 @@ export default function Status() {
             <SelectItem value="All">All</SelectItem>
             <SelectItem value="PENDING">Pending</SelectItem>
             <SelectItem value="PROCESSING">Processing</SelectItem>
-            <SelectItem value="SYNCED">Synced</SelectItem>
+            <SelectItem value="SUCCESS">Success</SelectItem>
             <SelectItem value="FAILED">Failed</SelectItem>
           </SelectGroup>
         </SelectContent>
