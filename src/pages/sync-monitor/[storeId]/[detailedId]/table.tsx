@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
 import { formatDate } from "date-fns/format"
+import { parse, format } from "date-fns"
 import TableData from "@/components/custom/table"
+
+import { formatInTimeZone } from "date-fns-tz"
 
 type AttendanceRecord = {
   id: string
@@ -78,16 +81,19 @@ export default function DetailedViewTable({
       {
         accessorKey: "logDate",
         header: "Date",
-        cell: ({ row }) => (
-          <div className="grid place-items-center">
-            <p className="text-sm font-medium text-navy-blue">
-              {formatDate(row.original.logDate, "hh:mm a")}
-            </p>
-            <p className="text-xs font-normal text-[#8A96A3]">
-              {formatDate(row.original.logDate, "MMMM d, yyyy")}
-            </p>
-          </div>
-        ),
+        cell: ({ row }) => {
+          return (
+            <div className="grid place-items-center">
+              <p className="text-sm font-medium text-navy-blue">
+                {formatInTimeZone(row.original.logDate, "UTC", "h:mm a")}
+              </p>
+
+              <p className="text-xs font-normal text-[#8A96A3]">
+                {formatDate(row.original.logDate, "MMMM d, yyyy")}
+              </p>
+            </div>
+          )
+        },
       },
     ],
     []
