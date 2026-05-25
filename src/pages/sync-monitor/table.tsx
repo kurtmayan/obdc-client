@@ -7,7 +7,14 @@ import { format, formatDistanceToNow } from "date-fns"
 import { Link } from "react-router"
 import { useFilterStore } from "@/store/useSyncMonitor"
 import { Badge } from "@/components/ui/badge"
-import { CircleCheckBig } from "lucide-react"
+import {
+  CircleAlert,
+  CircleCheck,
+  CircleCheckBig,
+  ClockFading,
+  Loader,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const clusterMap: Record<Cluster, string> = {
   head_office: "Head Office",
@@ -48,6 +55,7 @@ type StoreSyncRecord = {
   id: string
   syncDate: Date
   storesId: string
+  status: "SUCCESS" | "FAILED" | "PENDING" | "PROCESSING"
 }
 
 type Device = {
@@ -144,19 +152,52 @@ export default function SyncMonitorTable() {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
+          const record = row.original.storeSyncRecords?.[0]
+          if (!record) return null
+
+          const status = record.status
+
+          const success = status === "SUCCESS"
+          const failed = status === "FAILED"
+          const pending = status === "PENDING"
+          const processing = status === "PROCESSING"
+
+          const Icon = success
+            ? CircleCheck
+            : failed
+              ? CircleAlert
+              : pending
+                ? ClockFading
+                : processing
+                  ? Loader
+                  : CircleAlert
+
+          const className = cn(
+            "flex items-center gap-1 text-xs font-semibold",
+            success
+              ? "bg-[#D4FDE7] text-[#00662D]"
+              : failed
+                ? "bg-[#FFE1E2] text-[#A8000F]"
+                : pending
+                  ? "bg-[#FFF4D6] text-[#8A5A00]"
+                  : processing
+                    ? "bg-[#D9ECFF] text-[#0057B7]"
+                    : "text-black"
+          )
+
           return (
-            row.original.storeSyncRecords.length != 0 && (
-              <Badge className="bg-[#D4FDE7] text-xs font-semibold text-[#00662D]">
-                <CircleCheckBig color="#00662D" /> Synced
+            <div className="flex justify-center">
+              <Badge className={className}>
+                <Icon className="h-3.5 w-3.5" />
+                {status}
               </Badge>
-            )
+            </div>
           )
         },
         filterFn: (row, _, filterValue) => {
-          return (
-            (row.original.storeSyncRecords.length != 0) ===
-            (filterValue === "Synced")
-          )
+          const record = row.original.storeSyncRecords?.[0]
+          if (!record) return false
+          return record.status === filterValue
         },
       },
       {

@@ -6,6 +6,8 @@ import { Link } from "react-router"
 import { Badge } from "@/components/ui/badge"
 import { capitalize } from "@/lib/capitalize"
 import TableData from "@/components/custom/table"
+import { CircleAlert, CircleCheck, ClockFading, Loader } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type SyncLog = {
   id: string
@@ -56,15 +58,6 @@ export default function StoreViewTable({ storeId }: { storeId: string }) {
         ),
       },
       {
-        accessorKey: "pending",
-        header: "Pending",
-        cell: ({ row }) => (
-          <p className="text-center text-sm text-navy-blue">
-            {row.original.pending}
-          </p>
-        ),
-      },
-      {
         accessorKey: "lastSync",
         header: "Last Sync",
         cell: ({ row }) => (
@@ -76,11 +69,46 @@ export default function StoreViewTable({ storeId }: { storeId: string }) {
       {
         accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => (
-          <Badge className={`flex items-center gap-1 bg-green-400 text-white`}>
-            {capitalize(row.original.status)}
-          </Badge>
-        ),
+        cell: ({ row }) => {
+          const status = row.original.status
+
+          const success = status === "SUCCESS"
+          const failed = status === "FAILED"
+          const processing = status === "PROCESSING"
+          const pending = status === "PENDING"
+
+          const Icon = success
+            ? CircleCheck
+            : failed
+              ? CircleAlert
+              : pending
+                ? ClockFading
+                : processing
+                  ? Loader
+                  : CircleAlert
+
+          return (
+            <div className="flex justify-center">
+              <Badge
+                className={cn(
+                  "flex items-center gap-1 capitalize",
+                  success
+                    ? "bg-[#D4FDE7] text-[#00662D]"
+                    : failed
+                      ? "bg-[#FFE1E2] text-[#A8000F]"
+                      : pending
+                        ? "bg-[#FFF4D6] text-[#8A5A00]"
+                        : processing
+                          ? "bg-[#D9ECFF] text-[#0057B7]"
+                          : "text-black"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {status.toLowerCase()}
+              </Badge>
+            </div>
+          )
+        },
       },
       {
         accessorKey: "actions",
