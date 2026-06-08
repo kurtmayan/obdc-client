@@ -3,6 +3,7 @@ import { CircleX, CloudUpload, FileSpreadsheet, Upload } from "lucide-react"
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
 
 const acceptedFileTypes = {
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
@@ -12,13 +13,50 @@ const acceptedFileTypes = {
 }
 
 export default function ManualDTRUpload() {
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/sync/excel`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`)
+      }
+
+      const result = await response.text()
+      console.log("Upload result:", result)
+      return result
+    },
+    onSuccess: () => {
+      toast.success("File uploaded successfully")
+      form.reset()
+    },
+    onError: (error) => {
+      console.error("Upload error:", error)
+      toast.error(
+        error instanceof Error ? error.message : "Failed to upload file"
+      )
+    },
+  })
+
   const form = useForm({
     defaultValues: {
       file: null as File | null,
     },
     onSubmit: async ({ value }) => {
-      console.log("Uploading file:", value.file)
-      toast.success("File uploaded successfully")
+      if (!value.file) {
+        toast.error("No file selected")
+        return
+      }
+
+      uploadMutation.mutate(value.file)
     },
   })
 
@@ -115,21 +153,18 @@ export default function ManualDTRUpload() {
           </section>
 
           <form.Subscribe
-            selector={(state) => [
-              state.canSubmit,
-              state.isSubmitting,
-              !!state.values.file,
-            ]}
-            children={([canSubmit, isSubmitting, hasFile]) => (
+            selector={(state) => [state.canSubmit, !!state.values.file]}
+            children={([canSubmit, hasFile]) => (
               <Button
                 onClick={(e) => {
                   e.preventDefault()
                   form.handleSubmit()
                 }}
-                disabled={!canSubmit || isSubmitting || !hasFile}
+                disabled={!canSubmit || uploadMutation.isPending || !hasFile}
                 className="mt-5 h-12 w-67.5 text-[15px] font-semibold text-[#1F1F1F]"
               >
-                <Upload /> {isSubmitting ? "Uploading..." : "Upload DTR"}
+                <Upload />{" "}
+                {uploadMutation.isPending ? "Uploading..." : "Upload DTR"}
               </Button>
             )}
           />
