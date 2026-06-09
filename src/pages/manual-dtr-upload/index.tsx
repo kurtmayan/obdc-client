@@ -3,22 +3,45 @@ import { CircleX, CloudUpload, FileSpreadsheet, Upload } from "lucide-react"
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { useForm } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
 
 const acceptedFileTypes = {
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-    ".xlsx",
-  ],
-  "text/csv": [".csv"],
+  "application/zip": [".zip"],
+  "application/x-zip-compressed": [".zip"],
 }
 
 export default function ManualDTRUpload() {
+  const uploadDTRMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append("file", file)
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/sync/excel`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      )
+      return response.json()
+    },
+    onError: (e) => {
+      return toast.error(e.message)
+    },
+    onSuccess(data) {
+      form.reset()
+      return toast.success(data.message || "File uploaded successfully")
+    },
+  })
+
   const form = useForm({
     defaultValues: {
       file: null as File | null,
     },
     onSubmit: async ({ value }) => {
-      console.log("Uploading file:", value.file)
-      toast.success("File uploaded successfully")
+      if (value.file) {
+        return await uploadDTRMutation.mutateAsync(value.file)
+      }
+      return toast.error("No file selected. Please choose a file to upload.")
     },
   })
 

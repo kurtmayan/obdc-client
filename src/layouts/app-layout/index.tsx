@@ -12,9 +12,12 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { data: authData } = useQuery<ValidateTypeResponse>({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -32,6 +35,7 @@ export default function AppLayout() {
       if (!res.ok) {
         throw data
       }
+      console.log(data)
       return data
     },
   })
@@ -42,8 +46,11 @@ export default function AppLayout() {
     { label: "User Management", url: "/user-management", icon: UsersIcon },
   ]
 
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
+  useEffect(() => {
+    if (authData?.role === "MP" && pathname !== "/manual-dtr-upload") {
+      navigate("/manual-dtr-upload", { replace: true })
+    }
+  }, [authData?.role, pathname, navigate])
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
