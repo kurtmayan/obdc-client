@@ -75,18 +75,26 @@ export default function LoginPage() {
 
   return (
     <form
-      className="grid w-105 gap-5 rounded-[12px] border p-10 shadow-lg"
+      className="grid w-full max-w-105 gap-5 rounded-[12px] border bg-white p-5 shadow-lg sm:p-8 lg:p-10"
       onSubmit={(e) => {
         e.preventDefault()
         e.stopPropagation()
         form.handleSubmit()
       }}
     >
+      <img
+        src="/app-logo.svg"
+        alt="Biometric Data Consolidator logo"
+        className="mx-auto h-20 w-20 object-contain lg:hidden"
+      />
+
       <div className="text-center">
-        <p className="mx-auto mb-3 w-[50%] text-xl font-bold text-[#5A2E15]">
+        <p className="mx-auto mb-3 max-w-64 text-lg font-bold text-[#5A2E15] sm:text-xl">
           Biometric Data Consolidator
         </p>
-        <p className="text-[#8A96A3]">Sign in to O-BDC Portal</p>
+        <p className="text-sm text-[#8A96A3] sm:text-base">
+          Sign in to O-BDC Portal
+        </p>
       </div>
 
       {errorMessage && (
@@ -155,8 +163,8 @@ export default function LoginPage() {
             </>
           )}
         />
-        <div className="flex items-center justify-between">
-          <FieldGroup className="w-56">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <FieldGroup className="w-auto">
             <form.Field
               name="rememberMe"
               children={({ state, handleBlur, handleChange }) => (
@@ -173,7 +181,7 @@ export default function LoginPage() {
                   />
                   <FieldLabel
                     htmlFor="terms-checkbox-basic"
-                    className="text-[13px] font-medium text-navy-blue"
+                    className="whitespace-nowrap text-[13px] font-medium text-navy-blue"
                   >
                     Remember me
                   </FieldLabel>
@@ -183,7 +191,7 @@ export default function LoginPage() {
           </FieldGroup>
           <Link
             to={"/auth/forgot-password"}
-            className="text-[13px] font-medium text-navy-blue underline underline-offset-4 hover:underline"
+            className="self-start text-[13px] font-medium text-navy-blue underline underline-offset-4 hover:underline sm:self-auto"
           >
             Forgot password?
           </Link>

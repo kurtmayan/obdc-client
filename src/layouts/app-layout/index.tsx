@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
@@ -45,12 +44,6 @@ export default function AppLayout() {
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
     { label: "User Management", url: "/user-management", icon: UsersIcon },
   ]
-
-  useEffect(() => {
-    if (authData?.role === "MP" && pathname !== "/manual-dtr-upload") {
-      navigate("/manual-dtr-upload", { replace: true })
-    }
-  }, [authData?.role, pathname, navigate])
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
