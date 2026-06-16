@@ -26,8 +26,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useNavigate } from "react-router"
 
 const acceptedFileTypes = {
-  "application/zip": [".zip"],
-  "application/x-zip-compressed": [".zip"],
+  "application/octet-stream": [".enc"],
+  "application/x-msdownload": [".enc"],
 }
 
 export default function ManualDTRUpload() {
@@ -107,15 +107,34 @@ export default function ManualDTRUpload() {
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     accept: acceptedFileTypes,
+
     validator: (file) => {
-      if (!Object.keys(acceptedFileTypes).includes(file.type)) {
-        toast.error(
-          "Unsupported file type. Please upload an Excel or CSV file."
-        )
+      const fileName = file.name.toLowerCase()
+
+      const allowedExtensions = Object.values(acceptedFileTypes).flat()
+
+      const validExtension = allowedExtensions.some((extension) =>
+        fileName.endsWith(extension)
+      )
+
+      if (!validExtension) {
+        return {
+          code: "invalid-file-type",
+          message: `Unsupported file type. Please upload a ${allowedExtensions.join(", ")} file.`,
+        }
       }
+
       return null
     },
-    onDrop: (acceptedFiles) => {
+
+    onDrop: (acceptedFiles, fileRejections) => {
+      if (fileRejections.length > 0) {
+        toast.error(
+          fileRejections[0]?.errors[0]?.message ?? "Unsupported file type."
+        )
+        return
+      }
+
       if (acceptedFiles.length > 0) {
         form.setFieldValue("file", acceptedFiles[0])
       }
