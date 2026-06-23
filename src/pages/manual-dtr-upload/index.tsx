@@ -142,8 +142,9 @@ export default function ManualDTRUpload() {
   })
 
   return (
-    <div>
-      <div className="relative flex h-20.5 justify-center bg-navy-blue">
+     <div className="flex flex-col gap-5">
+
+      {authData?.role === "MP" && <div className="relative flex h-20.5 justify-center bg-navy-blue">
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -204,9 +205,9 @@ export default function ManualDTRUpload() {
             </div>
           </SheetContent>
         </Sheet>
-
         <img src="/app-logo.svg" className="h-28.5 w-29.75" />
-      </div>
+      </div>}
+      
 
       <div className="flex flex-col items-center px-5">
         <div>

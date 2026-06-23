@@ -48,6 +48,10 @@ export const router = createBrowserRouter([
         Component: ProtectedRoute,
         children: [
           {
+            path: "manual-dtr-upload",
+            Component: ManualDTRUpload,
+          },
+          {
             Component: AppLayout,
             children: [
               {
@@ -75,13 +79,13 @@ export const router = createBrowserRouter([
                 Component: UserManagement,
                 ErrorBoundary: Error,
               },
+              {
+                path: "dtr-upload",
+                Component: ManualDTRUpload,
+              },
             ],
           },
         ],
-      },
-      {
-        path: "/manual-dtr-upload",
-        Component: ManualDTRUpload,
       },
     ],
   },
