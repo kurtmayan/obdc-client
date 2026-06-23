@@ -15,6 +15,8 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { data: authData } = useQuery<ValidateTypeResponse>({
     queryKey: ["auth"],
     queryFn: async () => {
@@ -32,6 +34,7 @@ export default function AppLayout() {
       if (!res.ok) {
         throw data
       }
+      console.log(data)
       return data
     },
   })
@@ -40,10 +43,8 @@ export default function AppLayout() {
     { label: "Dashboard", url: "/", icon: OverviewIcon },
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
     { label: "User Management", url: "/user-management", icon: UsersIcon },
+    { label: "DTR Upload", url: "/dtr-upload", icon: UsersIcon },
   ]
-
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
@@ -88,7 +89,7 @@ export default function AppLayout() {
                     {authData?.firstName} {authData?.lastName}
                   </p>
                   <p className="text-left text-xs font-normal text-[#ffffff]/60">
-                    Admin
+                  {authData?.role}
                   </p>
                 </div>
               </div>

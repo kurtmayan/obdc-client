@@ -1,3 +1,4 @@
+import type { ValidateTypeResponse } from "@/components/protected-route"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/input-otp"
 import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
@@ -53,6 +54,28 @@ export default function TwoFactorAuthenticationPage() {
     },
   })
 
+  const { refetch: refetchAuthData } = useQuery<ValidateTypeResponse>({
+    queryKey: ["auth"],
+    enabled: false,
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   const form = useForm({
     defaultValues: {
       otp: "",
@@ -69,7 +92,10 @@ export default function TwoFactorAuthenticationPage() {
         })
         if (data.accessToken) {
           localStorage.setItem("token", data.accessToken)
-          return navigate("/")
+          const { data: freshAuthData } = await refetchAuthData()
+          return freshAuthData?.role === "MP"
+            ? navigate("/manual-dtr-upload")
+            : navigate("/")
         }
         return toast.error("Something went wrong")
       } catch (err) {
