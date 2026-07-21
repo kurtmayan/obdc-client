@@ -14,6 +14,7 @@ import UserManagement from "./pages/user-management"
 import ForgotPasswordPage from "./pages/forgot-password"
 import UpdatePasswordPage from "./pages/update-password"
 import ManualDTRUpload from "./pages/manual-dtr-upload"
+import StoreManagementPage from "./pages/device-management"
 
 export const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ export const router = createBrowserRouter([
               {
                 path: "dtr-upload",
                 Component: ManualDTRUpload,
+              },
+              {
+                path: "store-management",
+                Component: StoreManagementPage,
               },
             ],
           },

@@ -4,6 +4,7 @@ import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
 import { useQuery } from "@tanstack/react-query"
+import SearchInput from "@/components/custom/search-input"
 
 type StatisticsType = {
   totalStores: number
@@ -38,7 +39,6 @@ export default function Dashboard() {
           <p className="text-sm text-[#8A96A3]">Overview of all stores</p>
         </div>
       </div>
-
       <div className="grid grid-cols-3 gap-5">
         <StatsInfo
           title="Total Stores"

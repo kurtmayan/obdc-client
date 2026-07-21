@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
+import { MonitorSmartphone } from "lucide-react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 
 export default function AppLayout() {
@@ -44,6 +45,11 @@ export default function AppLayout() {
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
     { label: "User Management", url: "/user-management", icon: UsersIcon },
     { label: "DTR Upload", url: "/dtr-upload", icon: UsersIcon },
+    {
+      label: "Store Management",
+      url: "/store-management",
+      icon: MonitorSmartphone,
+    },
   ]
 
   return (
@@ -89,7 +95,7 @@ export default function AppLayout() {
                     {authData?.firstName} {authData?.lastName}
                   </p>
                   <p className="text-left text-xs font-normal text-[#ffffff]/60">
-                  {authData?.role}
+                    {authData?.role}
                   </p>
                 </div>
               </div>
