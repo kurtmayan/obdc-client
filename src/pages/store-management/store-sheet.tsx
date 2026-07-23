@@ -20,6 +20,7 @@ import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Dialog as SheetPrimitive } from "radix-ui"
 import { useEffect } from "react"
+import { useCreateStore } from "./actions"
 
 type StoreCreateSheetProps = React.ComponentProps<typeof SheetPrimitive.Root>
 
@@ -29,7 +30,7 @@ type StoreCreateSheetProps = React.ComponentProps<typeof SheetPrimitive.Root>
 //   "status": "active"
 // }
 
-type StoreInformation = {
+export type StoreInformation = {
   id: string
   createdAt: string
   updatedAt: string
@@ -58,8 +59,11 @@ const DEFAULT_STORE_INFORMATION: StoreInformation = {
   status: "active",
 }
 
-type UpdateStoreInfo = Partial<StoreInformation>
-type CreateStoreInfo = Omit<StoreInformation, "id" | "createdAt" | "updatedAt">
+export type UpdateStoreInfo = Partial<StoreInformation>
+export type CreateStoreInfo = Omit<
+  StoreInformation,
+  "id" | "createdAt" | "updatedAt"
+>
 
 export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
   const openSheet = storeManagement((s) => s.openSheet)
@@ -91,15 +95,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
     },
   })
 
-  const { mutateAsync: createStore } = useMutation({
-    mutationFn: async (data: CreateStoreInfo) => {
-      const { data: res } = await api.post<StoreInformation>("/store", data)
-      return res
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["store-management"] })
-    },
-  })
+  const { mutateAsync: createStore } = useCreateStore()
 
   const form = useForm({
     defaultValues: DEFAULT_STORE_INFORMATION,

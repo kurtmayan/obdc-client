@@ -3,6 +3,7 @@ import StoreSheet from "./store-sheet"
 import StoreManagementTable from "./table"
 import { Plus } from "lucide-react"
 import { storeManagement } from "@/store/store-management-page"
+import StoreDeactivationNotice from "./store-deactivation-notice"
 
 export default function StoreManagementPage() {
   const { setOpenSheet, setStoreToEdit } = storeManagement()
@@ -30,6 +31,7 @@ export default function StoreManagementPage() {
         <StoreManagementTable />
       </div>
       <StoreSheet />
+      <StoreDeactivationNotice />
     </div>
   )
 }

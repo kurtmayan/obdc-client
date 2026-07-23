@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
 import { storeManagement } from "@/store/store-management-page"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Ban, Edit } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
+import { useDeactivateStore } from "./actions"
 
 export type Store = {
   id: string
@@ -47,6 +48,7 @@ export default function StoreManagementTable() {
   const pageSize = searchParams.get("pageSize") ?? "10"
   const q = searchParams.get("q") ?? ""
   const { setStoreToEdit, setOpenSheet } = storeManagement()
+  const { setSelectedIdToDelete, setOpenDelete } = storeManagement()
 
   const {
     data = EMPTY_STORE_DATA,
@@ -98,12 +100,18 @@ export default function StoreManagementTable() {
                 console.log("asds")
               }}
             />
-            <Ban className="size-4" />
+            <Ban
+              className="size-4"
+              onClick={() => {
+                setSelectedIdToDelete(row.original.id)
+                setOpenDelete(true)
+              }}
+            />
           </div>
         ),
       },
     ],
-    []
+    [setStoreToEdit, setOpenSheet, setSelectedIdToDelete]
   )
 
   return (

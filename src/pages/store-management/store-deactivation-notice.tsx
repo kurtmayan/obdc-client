@@ -1,0 +1,58 @@
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { storeManagement } from "@/store/store-management-page"
+import { useState } from "react"
+import { useDeactivateStore } from "./actions"
+
+export default function StoreDeactivationNotice() {
+  const [confirmation, setConfirmation] = useState("")
+  const storeIdToDelete = storeManagement((s) => s.selectedIdToDelete)
+  const open = storeManagement((s) => s.openDelete)
+  const { setOpenDelete } = storeManagement()
+  const { mutateAsync: deactivateStore } = useDeactivateStore()
+
+  const handleDisable = () => {
+    deactivateStore(storeIdToDelete as string)
+    setOpenDelete(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpenDelete}>
+      <DialogContent showCloseButton={false} className="w-83.5">
+        <DialogHeader>
+          <DialogTitle className="text-center text-[16px] font-bold">
+            Are you sure you want to deactivate this store?
+          </DialogTitle>
+          <DialogDescription className="mx-auto w-66.5 text-center text-xs">
+            This will stop it from syncing and exclude it from reports.{" "}
+          </DialogDescription>
+        </DialogHeader>
+        <Input
+          placeholder="Type 'disable' to disable "
+          onChange={(e) => setConfirmation(e.target.value)}
+        />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant={"outline"}>Cancel</Button>
+          </DialogClose>
+          <Button
+            disabled={confirmation.toLowerCase() !== "disable"}
+            onClick={handleDisable}
+          >
+            Disable
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
