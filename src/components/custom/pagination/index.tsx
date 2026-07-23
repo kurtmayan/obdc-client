@@ -11,17 +11,18 @@ type PaginationProps = {
 export default function Pagination({ page, pageSize, total }: PaginationProps) {
   const pushParams = usePushParams()
 
-  const totalPages = Math.ceil(total / pageSize)
+  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 0
+  const currentPage = Math.min(Math.max(page, 1), Math.max(totalPages, 1))
 
-  const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1
-  const endItem = Math.min(page * pageSize, total)
+  const startItem = total === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const endItem = Math.min(currentPage * pageSize, total)
 
   const pageInformation = `Showing ${startItem}-${endItem} of ${total} items`
 
-  const pages = getWindowedPages(page, totalPages)
+  const pages = getWindowedPages(currentPage, totalPages)
 
   const onChange = (value: number) => {
-    if (value < 1 || value > totalPages || value === page) return
+    if (value < 1 || value > totalPages || value === currentPage) return
 
     pushParams({ page: String(value) })
   }
@@ -34,8 +35,8 @@ export default function Pagination({ page, pageSize, total }: PaginationProps) {
         <div className="flex flex-row items-center gap-2">
           <Button
             type="button"
-            disabled={page <= 1}
-            onClick={() => onChange(page - 1)}
+            disabled={currentPage <= 1}
+            onClick={() => onChange(currentPage - 1)}
             size="icon-lg"
             variant="outline"
             aria-label="Go to previous page"
@@ -48,11 +49,11 @@ export default function Pagination({ page, pageSize, total }: PaginationProps) {
             <Button
               type="button"
               size="icon-lg"
-              variant={pageNumber === page ? "default" : "outline"}
+              variant={pageNumber === currentPage ? "default" : "outline"}
               key={pageNumber}
               onClick={() => onChange(pageNumber)}
               aria-label={`Go to page ${pageNumber}`}
-              aria-current={pageNumber === page ? "page" : undefined}
+              aria-current={pageNumber === currentPage ? "page" : undefined}
             >
               {pageNumber}
             </Button>
@@ -60,8 +61,8 @@ export default function Pagination({ page, pageSize, total }: PaginationProps) {
 
           <Button
             type="button"
-            disabled={page >= totalPages}
-            onClick={() => onChange(page + 1)}
+            disabled={currentPage >= totalPages}
+            onClick={() => onChange(currentPage + 1)}
             size="icon-lg"
             variant="outline"
             aria-label="Go to next page"

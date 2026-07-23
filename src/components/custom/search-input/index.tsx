@@ -33,6 +33,7 @@ export default function SearchInput({ className, ...props }: SearchInput) {
       <InputGroupInput
         placeholder="Search..."
         onChange={(e) => setInputValue(e.target.value)}
+        value={inputValue}
       />
       <InputGroupAddon>
         <Search />

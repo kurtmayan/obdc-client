@@ -14,7 +14,7 @@ import UserManagement from "./pages/user-management"
 import ForgotPasswordPage from "./pages/forgot-password"
 import UpdatePasswordPage from "./pages/update-password"
 import ManualDTRUpload from "./pages/manual-dtr-upload"
-import StoreManagementPage from "./pages/device-management"
+import StoreManagementPage from "./pages/store-management"
 
 export const router = createBrowserRouter([
   {
