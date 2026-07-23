@@ -1,10 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
-import type {
-  CreateStoreInfo,
-  StoreInformation,
-  UpdateStoreInfo,
-} from "./store-sheet"
+import type { CreateStoreInfo, StoreInformation } from "./store-sheet"
 
 export function useDeactivateStore() {
   const queryClient = useQueryClient()
@@ -16,6 +12,7 @@ export function useDeactivateStore() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["store-management"] })
+      queryClient.invalidateQueries({ queryKey: ["store-detail-information"] })
     },
   })
 }

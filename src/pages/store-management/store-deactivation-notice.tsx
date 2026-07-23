@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { storeManagement } from "@/store/store-management-page"
 import { useState } from "react"
 import { useDeactivateStore } from "./actions"
+import { toast } from "sonner"
 
 export default function StoreDeactivationNotice() {
   const [confirmation, setConfirmation] = useState("")
@@ -22,8 +23,18 @@ export default function StoreDeactivationNotice() {
   const { mutateAsync: deactivateStore } = useDeactivateStore()
 
   const handleDisable = () => {
-    deactivateStore(storeIdToDelete as string)
-    setOpenDelete(false)
+    toast.promise(
+      deactivateStore(storeIdToDelete as string).then((data) => {
+        setOpenDelete(false)
+        return data
+      }),
+      {
+        loading: "Deactivating store...",
+        success: "Store disabled successfully!",
+        error: "Store cannot be disabled!",
+        position: "top-center",
+      }
+    )
   }
 
   return (

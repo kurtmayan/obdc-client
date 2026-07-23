@@ -21,6 +21,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { Dialog as SheetPrimitive } from "radix-ui"
 import { useEffect } from "react"
 import { useCreateStore } from "./actions"
+import { Switch } from "@/components/ui/switch"
 
 type StoreCreateSheetProps = React.ComponentProps<typeof SheetPrimitive.Root>
 
@@ -237,6 +238,28 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
                 />
               </Field>
             )}
+          />
+          <form.Field
+            name="status"
+            children={(field) => {
+              const status = field.state.value === "active" ? true : false
+              return (
+                <div className="flex flex-row gap-3">
+                  <Switch
+                    id={field.name}
+                    name={field.name}
+                    checked={status}
+                    onCheckedChange={(checked) =>
+                      field.handleChange(checked ? "active" : "inactive")
+                    }
+                    onBlur={field.handleBlur}
+                  />
+                  <p className={status ? "text-green-500" : "text-red-500"}>
+                    {status ? "Active" : "Inactive"}
+                  </p>
+                </div>
+              )
+            }}
           />
 
           {/* the form needs an actual submit trigger — see note below */}
