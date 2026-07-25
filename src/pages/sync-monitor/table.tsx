@@ -70,7 +70,12 @@ export default function SyncMonitorTable() {
     queryKey: ["stores"],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },

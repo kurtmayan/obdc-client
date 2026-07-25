@@ -32,7 +32,12 @@ export default function SyncMonitorStoreView() {
     queryKey: ["attendance"],
     queryFn: async () => {
       const data = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return await data.json()
     },
@@ -46,7 +51,12 @@ export default function SyncMonitorStoreView() {
     queryKey: ["attendance-store", storeId],
     queryFn: async () => {
       const data = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return await data.json()
     },
