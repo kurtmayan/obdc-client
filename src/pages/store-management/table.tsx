@@ -5,29 +5,17 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
 import { storeManagement } from "@/store/store-management-page"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Ban, Edit } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
-import { useDeactivateStore } from "./actions"
-
-export type Store = {
-  id: string
-  createdAt: string
-  updatedAt: string
-  code: string
-  name: string
-  division: string
-  location: string
-  cluster: string
-  contactPerson: string
-  contactNumber: string
-  status: string
-}
+import type { StoreInformation } from "./store-sheet"
+import { Collapsible } from "radix-ui"
+import CollapsibleContainer from "@/components/custom/colapsible-container"
 
 export type StoreData = {
-  items: Store[]
+  items: StoreInformation[]
   page: number
   pageSize: number
   totalItems: number
@@ -66,11 +54,17 @@ export default function StoreManagementTable() {
     placeholderData: (prev) => prev,
   })
 
-  const columns = useMemo<ColumnDef<Store>[]>(
+  const columns = useMemo<ColumnDef<StoreInformation>[]>(
     () => [
       { accessorKey: "name", header: "Store Name" },
       { accessorKey: "location", header: "Location" },
-      { accessorKey: "cluster", header: "Assigned Devices" },
+      {
+        accessorKey: "devices",
+        header: "Assigned Devices",
+        cell: ({ row }) => (
+          <CollapsibleContainer items={row.original.devices} />
+        ),
+      },
       {
         accessorKey: "status",
         header: "Status",

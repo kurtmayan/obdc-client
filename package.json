@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@base-ui/react": "^1.6.0",
     "@fontsource-variable/manrope": "^5.2.8",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-form": "^1.28.6",

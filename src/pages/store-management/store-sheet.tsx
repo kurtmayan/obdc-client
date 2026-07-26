@@ -22,14 +22,10 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 import { useEffect } from "react"
 import { useCreateStore } from "./actions"
 import { Switch } from "@/components/ui/switch"
+import type { Device } from "@/types/device"
+import { Badge } from "@/components/ui/badge"
 
 type StoreCreateSheetProps = React.ComponentProps<typeof SheetPrimitive.Root>
-
-// {
-//   "contactPerson": "string",
-//   "contactNumber": "string",
-//   "status": "active"
-// }
 
 export type StoreInformation = {
   id: string
@@ -44,6 +40,7 @@ export type StoreInformation = {
   contactPerson: string
   contactNumber: string
   status: "active" | "inactive"
+  devices: Device[]
 }
 
 const DEFAULT_STORE_INFORMATION: StoreInformation = {
@@ -58,6 +55,7 @@ const DEFAULT_STORE_INFORMATION: StoreInformation = {
   contactPerson: "",
   contactNumber: "",
   status: "active",
+  devices: [],
 }
 
 export type UpdateStoreInfo = Partial<StoreInformation>
@@ -102,13 +100,21 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
     defaultValues: DEFAULT_STORE_INFORMATION,
 
     onSubmit: async ({ value }) => {
-      if (storeId) {
-        await editStore(value)
-      } else {
-        const { id, createdAt, updatedAt, ...payload } = value
-        await createStore(payload)
+      // Strip audit fields consistently for both create and edit,
+      // so we never round-trip id/createdAt/updatedAt back to the server.
+      const { id, createdAt, updatedAt, ...payload } = value
+
+      try {
+        if (storeId) {
+          await editStore(payload)
+        } else {
+          await createStore(payload)
+        }
+        setOpenSheet?.(false)
+      } catch (err) {
+        // TODO: surface this to the user via toast/inline error
+        console.error("Failed to save store:", err)
       }
-      setOpenSheet?.(false)
     },
   })
 
@@ -118,7 +124,13 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
     } else if (!storeId) {
       form.reset(DEFAULT_STORE_INFORMATION)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, storeId])
+
+  // Used to force SelectInput (an uncontrolled component keyed off
+  // `defaultValue`) to remount once real data has loaded, otherwise it
+  // keeps showing its initial blank value even after form.reset() runs.
+  const selectResetKey = initialData?.id ?? storeId ?? "new"
 
   return (
     <Sheet {...props} open={openSheet} onOpenChange={setOpenSheet}>
@@ -138,37 +150,39 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
         >
           <p>Basic Information</p>
 
-          <form.Field
-            name="name"
-            children={(field) => (
-              <Field>
-                <FieldLabel>Store Name</FieldLabel>
-                <Input
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                />
-              </Field>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-5">
+            <form.Field
+              name="name"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>Store Name</FieldLabel>
+                  <Input
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                </Field>
+              )}
+            />
 
-          <form.Field
-            name="code"
-            children={(field) => (
-              <Field>
-                <FieldLabel>Store Code</FieldLabel>
-                <Input
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) =>
-                    field.handleChange(e.target.value.toUpperCase())
-                  }
-                  onBlur={field.handleBlur}
-                />
-              </Field>
-            )}
-          />
+            <form.Field
+              name="code"
+              children={(field) => (
+                <Field>
+                  <FieldLabel>Store Code</FieldLabel>
+                  <Input
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value.toUpperCase())
+                    }
+                    onBlur={field.handleBlur}
+                  />
+                </Field>
+              )}
+            />
+          </div>
 
           <form.Field
             name="location"
@@ -191,6 +205,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
               <Field>
                 <FieldLabel>Cluster</FieldLabel>
                 <SelectInput
+                  key={`cluster-${selectResetKey}`}
                   options={cluster}
                   onChange={field.handleChange}
                   defaultValue={field.state.value}
@@ -204,6 +219,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
               <Field>
                 <FieldLabel>Division</FieldLabel>
                 <SelectInput
+                  key={`division-${selectResetKey}`}
                   options={division}
                   onChange={field.handleChange}
                   defaultValue={field.state.value}
@@ -242,7 +258,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
           <form.Field
             name="status"
             children={(field) => {
-              const status = field.state.value === "active" ? true : false
+              const status = field.state.value === "active"
               return (
                 <div className="flex flex-row gap-3">
                   <Switch
@@ -262,7 +278,36 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
             }}
           />
 
-          {/* the form needs an actual submit trigger — see note below */}
+          {storeId && (
+            <form.Field
+              name="devices"
+              children={(field) => {
+                const devices = field.state.value ?? []
+                return (
+                  <div>
+                    <p>Connected Device:</p>
+                    {devices.length > 0 ? (
+                      <div className="mt-2 flex flex-row gap-1">
+                        {devices.map((device) => (
+                          <Badge
+                            key={device.id}
+                            className="text-xs"
+                            variant={"outline"}
+                          >
+                            {device.serialNumber}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No device connected.
+                      </p>
+                    )}
+                  </div>
+                )
+              }}
+            />
+          )}
         </form>
         <SheetFooter className="grid grid-cols-2">
           <SheetClose asChild>
