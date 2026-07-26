@@ -4,7 +4,6 @@ import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
 import { useQuery } from "@tanstack/react-query"
-import SearchInput from "@/components/custom/search-input"
 
 type StatisticsType = {
   totalStores: number

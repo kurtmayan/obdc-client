@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 
@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useDebouncedValue } from "@/hooks/useDebounce"
 
 type Store = {
   id: string
@@ -34,6 +35,7 @@ type StoreComboboxProps = {
   onChange: (value: string) => void
   onBlur?: () => void
   disabled?: boolean
+  selectedStore?: Store | null
 }
 
 export function StoreCombobox({
@@ -41,21 +43,31 @@ export function StoreCombobox({
   onChange,
   onBlur,
   disabled = false,
+  selectedStore,
 }: StoreComboboxProps) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const debouncedSearch = useDebouncedValue(search, 300)
 
   const { data, isPending, isError } = useQuery({
-    queryKey: ["stores"],
+    queryKey: ["stores", debouncedSearch],
     queryFn: async (): Promise<StoresResponse> => {
-      const response = await api.get("/stores")
+      const response = await api.get("/stores", {
+        params: {
+          page: 1,
+          pageSize: 5,
+          q: debouncedSearch || undefined,
+        },
+      })
 
       return response.data
     },
   })
 
-  const stores = data?.items ?? []
+  const stores = useMemo(() => data?.items ?? [], [data?.items])
 
-  const selectedStore = stores.find((store) => store.id === value)
+  const selectedStoreFromList = stores.find((store) => store.id === value)
+  const currentStore = selectedStoreFromList ?? selectedStore
 
   return (
     <Popover
@@ -82,11 +94,11 @@ export function StoreCombobox({
               <Loader2 className="size-4 animate-spin" />
               Loading stores...
             </span>
-          ) : selectedStore ? (
+          ) : currentStore ? (
             <span className="min-w-0 text-left">
-              <span className="block truncate">{selectedStore.name}</span>
+              <span className="block truncate">{currentStore.name}</span>
               <span className="block truncate text-xs text-muted-foreground">
-                {selectedStore.location}
+                {currentStore.location}
               </span>
             </span>
           ) : (
@@ -102,7 +114,11 @@ export function StoreCombobox({
         align="start"
       >
         <Command>
-          <CommandInput placeholder="Search stores..." />
+          <CommandInput
+            placeholder="Search stores..."
+            value={search}
+            onValueChange={setSearch}
+          />
 
           <CommandList>
             <CommandEmpty>

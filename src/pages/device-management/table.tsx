@@ -1,27 +1,25 @@
 import DataTable from "@/components/custom/data-table"
 import Pagination from "@/components/custom/pagination"
 import SearchInput from "@/components/custom/search-input"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
-import { storeManagement } from "@/store/store-management-page"
+import { deviceManagement } from "@/store/device-management-page"
+import type { Device } from "@/types/device"
 import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
-import { Ban, Edit } from "lucide-react"
+import { Edit, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
-import type { StoreInformation } from "./store-sheet"
-import CollapsibleContainer from "@/components/custom/colapsible-container"
 
-export type StoreData = {
-  items: StoreInformation[]
+export type DeviceData = {
+  items: Device[]
   page: number
   pageSize: number
   totalItems: number
   totalPages: number
 }
 
-const EMPTY_STORE_DATA: StoreData = {
+const EMPTY_DEVICE_DATA: DeviceData = {
   items: [],
   page: 1,
   pageSize: 0,
@@ -29,56 +27,47 @@ const EMPTY_STORE_DATA: StoreData = {
   totalPages: 0,
 }
 
-export default function StoreManagementTable() {
+function getDeviceStoreName(device: Device) {
+  const store = device.store ?? device.stores
+
+  if (!store) {
+    return "No store connected"
+  }
+
+  return store.location ? `${store.name} - ${store.location}` : store.name
+}
+
+export default function DeviceManagementTable() {
   const [searchParams] = useSearchParams()
   const page = searchParams.get("page") ?? "1"
   const pageSize = searchParams.get("pageSize") ?? "10"
   const q = searchParams.get("q") ?? ""
-  const { setStoreToEdit, setOpenSheet } = storeManagement()
-  const { setSelectedIdToDelete, setOpenDelete } = storeManagement()
+  const { setDeviceToEdit, setOpenSheet } = deviceManagement()
+  const { setSelectedIdToDelete, setOpenDelete } = deviceManagement()
 
   const {
-    data = EMPTY_STORE_DATA,
+    data = EMPTY_DEVICE_DATA,
     isLoading,
     error,
-  } = useQuery<StoreData>({
-    queryKey: ["store-management", page, q, pageSize],
+  } = useQuery<DeviceData>({
+    queryKey: ["device-management", page, q, pageSize],
     queryFn: async () => {
-      const { data } = await api.get<StoreData>("/store", {
+      const { data } = await api.get<DeviceData>("/device", {
         params: { page, pageSize, q: q || undefined },
       })
-      console.log(data)
       return data
     },
     placeholderData: (prev) => prev,
   })
 
-  const columns = useMemo<ColumnDef<StoreInformation>[]>(
+  const columns = useMemo<ColumnDef<Device>[]>(
     () => [
-      { accessorKey: "name", header: "Store Name" },
-      { accessorKey: "location", header: "Location" },
+      { accessorKey: "serialNumber", header: "Serial Number" },
+      { accessorKey: "model", header: "Model" },
       {
-        accessorKey: "devices",
-        header: "Assigned Devices",
-        cell: ({ row }) => (
-          <CollapsibleContainer items={row.original.devices} />
-        ),
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => {
-          const status = row.original.status
-          const isActive = status == "active"
-          return (
-            <Badge
-              variant={isActive ? "success" : "failed"}
-              className="px-3.5 py-1.25 font-semibold capitalize"
-            >
-              {status}
-            </Badge>
-          )
-        },
+        id: "store",
+        header: "Connected Store",
+        cell: ({ row }) => getDeviceStoreName(row.original),
       },
       {
         id: "actions",
@@ -86,15 +75,14 @@ export default function StoreManagementTable() {
         cell: ({ row }) => (
           <div className="flex justify-center gap-3">
             <Edit
-              className="size-4"
+              className="size-4 cursor-pointer"
               onClick={() => {
-                setStoreToEdit(row.original.id)
+                setDeviceToEdit(row.original.id)
                 setOpenSheet(true)
-                console.log("asds")
               }}
             />
-            <Ban
-              className="size-4"
+            <Trash2
+              className="size-4 cursor-pointer"
               onClick={() => {
                 setSelectedIdToDelete(row.original.id)
                 setOpenDelete(true)
@@ -104,7 +92,7 @@ export default function StoreManagementTable() {
         ),
       },
     ],
-    [setStoreToEdit, setOpenSheet, setSelectedIdToDelete, setOpenDelete]
+    [setDeviceToEdit, setOpenSheet, setSelectedIdToDelete, setOpenDelete]
   )
 
   return (

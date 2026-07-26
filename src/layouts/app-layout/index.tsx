@@ -1,6 +1,7 @@
 import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import UsersIcon from "@/components/icons/users-icon"
+import DeviceIcon from "@/components/icons/device-icon"
 import type { ValidateTypeResponse } from "@/components/protected-route"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -49,6 +50,11 @@ export default function AppLayout() {
       label: "Store Management",
       url: "/store-management",
       icon: MonitorSmartphone,
+    },
+    {
+      label: "Device Management",
+      url: "/device-management",
+      icon: DeviceIcon,
     },
   ]
 

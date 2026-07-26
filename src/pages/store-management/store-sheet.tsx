@@ -64,6 +64,20 @@ export type CreateStoreInfo = Omit<
   "id" | "createdAt" | "updatedAt"
 >
 
+function toStorePayload(value: StoreInformation): CreateStoreInfo {
+  return {
+    code: value.code,
+    name: value.name,
+    division: value.division,
+    location: value.location,
+    cluster: value.cluster,
+    contactPerson: value.contactPerson,
+    contactNumber: value.contactNumber,
+    status: value.status,
+    devices: value.devices,
+  }
+}
+
 export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
   const openSheet = storeManagement((s) => s.openSheet)
   const storeId = storeManagement((s) => s.storeId)
@@ -100,9 +114,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
     defaultValues: DEFAULT_STORE_INFORMATION,
 
     onSubmit: async ({ value }) => {
-      // Strip audit fields consistently for both create and edit,
-      // so we never round-trip id/createdAt/updatedAt back to the server.
-      const { id, createdAt, updatedAt, ...payload } = value
+      const payload = toStorePayload(value)
 
       try {
         if (storeId) {
