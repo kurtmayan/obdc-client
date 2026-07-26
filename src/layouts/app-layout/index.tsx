@@ -13,8 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
-import { MonitorSmartphone } from "lucide-react"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
+import { Store } from "lucide-react"
 
 export default function AppLayout() {
   const { pathname } = useLocation()
@@ -49,7 +49,7 @@ export default function AppLayout() {
     {
       label: "Store Management",
       url: "/store-management",
-      icon: MonitorSmartphone,
+      icon: Store,
     },
     {
       label: "Device Management",
