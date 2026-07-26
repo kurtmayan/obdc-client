@@ -131,7 +131,9 @@ export default function DeviceSheet({ ...props }: DeviceSheetProps) {
     <Sheet {...props} open={openSheet} onOpenChange={setOpenSheet}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>{deviceId ? "Edit Device" : "Enroll New Device"}</SheetTitle>
+          <SheetTitle>
+            {deviceId ? "Edit Device" : "Enroll New Device"}
+          </SheetTitle>
           <SheetDescription />
         </SheetHeader>
 
@@ -180,7 +182,7 @@ export default function DeviceSheet({ ...props }: DeviceSheetProps) {
             name="storesId"
             children={(field) => (
               <Field>
-                <FieldLabel>Connected Store</FieldLabel>
+                <FieldLabel>Store</FieldLabel>
                 <StoreCombobox
                   value={field.state.value}
                   onChange={field.handleChange}

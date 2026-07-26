@@ -50,16 +50,13 @@ export function StoreCombobox({
   const debouncedSearch = useDebouncedValue(search, 300)
 
   const { data, isPending, isError } = useQuery({
-    queryKey: ["stores", debouncedSearch],
+    queryKey: ["store-lookup", debouncedSearch],
     queryFn: async (): Promise<StoresResponse> => {
-      const response = await api.get("/stores", {
+      const response = await api.get("/store/lookup", {
         params: {
-          page: 1,
-          pageSize: 5,
           q: debouncedSearch || undefined,
         },
       })
-
       return response.data
     },
   })
@@ -87,7 +84,7 @@ export function StoreCombobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled || isPending}
-          className="w-full justify-between font-normal"
+          className="w-full justify-between py-6 font-normal"
         >
           {isPending ? (
             <span className="flex items-center gap-2 text-muted-foreground">
