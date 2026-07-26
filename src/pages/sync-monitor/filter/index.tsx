@@ -6,13 +6,13 @@ import Status from "./status"
 
 export default function Filter() {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         {/* TODO: Cluster depends on the selected division */}
-        <DatePickerWithRange />
         <Division />
         <Cluster />
         <Status />
+        <DatePickerWithRange />
       </div>
       <Export />
     </div>

@@ -25,8 +25,8 @@ export default function SearchInput({ className, ...props }: SearchInput) {
 
   useEffect(() => {
     if (debouncedInput === query) return
-    pushParams({ q: debouncedInput })
-  }, [debouncedInput, pushParams])
+    pushParams({ q: debouncedInput, page: "1" })
+  }, [debouncedInput, query, pushParams])
 
   return (
     <InputGroup className={cn("w-[288px]", className)} {...props}>
