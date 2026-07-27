@@ -165,13 +165,19 @@ export default function InviteUser() {
             />
             <form.Field
               name="role"
-              children={() => (
+              children={({ state, handleBlur, handleChange }) => (
                 <div className="mt-5">
                   <FieldLabel htmlFor="role" className="text-navy-blue">
                     Role
                   </FieldLabel>
-                  <Select disabled={form.state.isSubmitting}>
-                    <SelectTrigger className="h-11 w-full">
+                  <Select
+                    disabled={form.state.isSubmitting}
+                    value={state.value}
+                    onValueChange={(e: InviteUserType["role"]) =>
+                      handleChange(e)
+                    }
+                  >
+                    <SelectTrigger className="h-11 w-full" onBlur={handleBlur}>
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>

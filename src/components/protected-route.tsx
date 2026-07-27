@@ -12,6 +12,7 @@ export type ValidateTypeResponse = {
   middleName: string
   iat: number
   exp: number
+  lastPasswordUpdate: string
 }
 
 export default function ProtectedRoute() {

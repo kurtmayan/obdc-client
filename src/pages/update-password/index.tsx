@@ -14,6 +14,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { Separator } from "@/components/ui/separator"
 import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
@@ -22,11 +23,13 @@ import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 
-type UpdatePasswordType = {
+type UpdatePasswordTypes = {
   email: string
   token: string
   newPassword: string
 }
+
+type UpdatePasswordType = "forgot" | "expired"
 
 export default function UpdatePasswordPage() {
   const location = useLocation()
@@ -34,6 +37,9 @@ export default function UpdatePasswordPage() {
   const searchParams = new URLSearchParams(location.search)
 
   const userEmail = searchParams.get("email") ?? ""
+  const typeParam = searchParams.get("type")
+  const type: UpdatePasswordType =
+    typeParam === "expired" || typeParam === "forgot" ? typeParam : "forgot"
 
   const [passwordEye, setPasswordEye] = useState({
     newPassword: false,
@@ -45,7 +51,7 @@ export default function UpdatePasswordPage() {
       message: string
     },
     ErrorResponse,
-    UpdatePasswordType
+    UpdatePasswordTypes
   >({
     mutationFn: async (credentials) => {
       const response = await fetch(
@@ -102,18 +108,12 @@ export default function UpdatePasswordPage() {
     >
       <div className="absolute inset-0 bg-yellow-500/50" />
 
-      <Card className="z-10 w-94.25 p-5 text-center">
-        <CardHeader>
-          <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
-            Hi {userEmail}! <br />
-            Let’s update your password.
-          </CardTitle>
-          <CardDescription className="text-[#8A96A3]">
-            <p className="text-xs text-[#8A96A3]">
-              Update your password to continue using your account safely.
-            </p>
-          </CardDescription>
-        </CardHeader>
+      <Card className="z-10 w-94.25 p-6 text-center">
+        {type === "expired" ? (
+          <FormExpiredHeader />
+        ) : (
+          <FormForgotHeader email={userEmail} />
+        )}
         <CardContent className="flex flex-col items-center justify-center">
           {postUpdatePassword.isSuccess && (
             <Alert className="mb-5 border-none bg-[#D4FDE7]">
@@ -148,7 +148,7 @@ export default function UpdatePasswordPage() {
                 >
                   New Password
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="mt-1">
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
@@ -207,7 +207,7 @@ export default function UpdatePasswordPage() {
                 >
                   Confirm New Password
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="mt-1">
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
@@ -266,8 +266,44 @@ export default function UpdatePasswordPage() {
               </Button>
             )}
           </form.Subscribe>
+          <Separator className="my-5" />
+          <p className="text-xs tracking-normal text-[#8A96A3]">
+            Mayan Solutions Inc.
+          </p>
         </CardFooter>
       </Card>
     </form>
+  )
+}
+
+function FormForgotHeader({ email }: { email: string }) {
+  return (
+    <CardHeader>
+      <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
+        Hi {email}! <br />
+        Let’s update your password.
+      </CardTitle>
+      <CardDescription className="text-[#8A96A3]">
+        <p className="text-xs text-[#8A96A3]">
+          Update your password to continue using your account safely.
+        </p>
+      </CardDescription>
+    </CardHeader>
+  )
+}
+
+function FormExpiredHeader() {
+  return (
+    <CardHeader>
+      <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
+        Your password has expired
+      </CardTitle>
+      <CardDescription className="text-[#8A96A3]">
+        <p className="text-xs text-[#8A96A3]">
+          To keep your account secure and avoid being locked out, please update
+          your password now.
+        </p>
+      </CardDescription>
+    </CardHeader>
   )
 }
