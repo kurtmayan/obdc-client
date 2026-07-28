@@ -25,7 +25,16 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [errorMessage, setErrorMessage] = useState<boolean>(false)
 
-  const postLogin = useMutation<LoginResponse, ErrorResponse, LoginType>({
+  const postLogin = useMutation<
+    LoginResponse,
+    ErrorResponse & {
+      code?: string
+      data?: {
+        token: string
+      }
+    },
+    LoginType
+  >({
     mutationFn: async (credentials) => {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/login`,
@@ -43,6 +52,29 @@ export default function LoginPage() {
       }
       return data
     },
+    onSuccess: (data, variables) => {
+      setErrorMessage(false)
+      if (data.message === "OTP Sent to email") {
+        navigate("/auth/2fa", {
+          state: {
+            email: variables.email,
+          },
+        })
+      }
+    },
+    onError: (error, variables) => {
+      if (error.code === "PASSWORD_EXPIRED") {
+        if (error.data?.token) {
+          navigate(
+            `/auth/update-password?type=expired&token=${encodeURIComponent(error.data?.token)}&email=${encodeURIComponent(
+              variables.email
+            )}`
+          )
+          return
+        }
+      }
+      setErrorMessage(true)
+    },
   })
 
   const form = useForm({
@@ -51,25 +83,11 @@ export default function LoginPage() {
       password: "",
       rememberMe: false,
     },
-    onSubmit: async ({ value }: { value: LoginType }) => {
-      try {
-        setErrorMessage(false)
-        const data = await postLogin.mutateAsync({
-          email: value.email,
-          password: value.password,
-        })
-        if (data.message === "OTP Sent to email") {
-          return navigate("/auth/2fa", {
-            state: {
-              email: value.email,
-            },
-          })
-        }
-        return setErrorMessage(true)
-      } catch (err) {
-        console.log(err)
-        return setErrorMessage(true)
-      }
+    onSubmit: ({ value }) => {
+      postLogin.mutate({
+        email: value.email,
+        password: value.password,
+      })
     },
   })
 
@@ -181,7 +199,7 @@ export default function LoginPage() {
                   />
                   <FieldLabel
                     htmlFor="terms-checkbox-basic"
-                    className="whitespace-nowrap text-[13px] font-medium text-navy-blue"
+                    className="text-[13px] font-medium whitespace-nowrap text-navy-blue"
                   >
                     Remember me
                   </FieldLabel>
