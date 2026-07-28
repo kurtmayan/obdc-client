@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
-import { addDays, compareAsc, differenceInDays } from "date-fns"
+import { addDays, compareAsc } from "date-fns"
 import { toast } from "sonner"
 
 export default function AppLayout() {
@@ -74,7 +74,6 @@ export default function AppLayout() {
       return data
     },
     onSuccess: (e, variable) => {
-      e.token
       navigate(
         `/auth/update-password?type=expired&token=${encodeURIComponent(e.token)}&email=${variable.email}`
       )

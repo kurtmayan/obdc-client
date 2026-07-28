@@ -20,6 +20,8 @@ type LoginType = {
 
 type LoginResponse = {
   message: string
+  otpExpiresAt: string
+  resendAvailableAt: string
 }
 
 export default function LoginPage() {
@@ -62,6 +64,8 @@ export default function LoginPage() {
         navigate("/auth/2fa", {
           state: {
             email: variables.email,
+            otpExpiresAt: data.otpExpiresAt,
+            resendAvailableAt: data.resendAvailableAt,
           },
         })
       }
@@ -159,7 +163,7 @@ export default function LoginPage() {
               {state.meta.isTouched &&
                 state.meta.errors.map((error) =>
                   error ? (
-                    <p key={error} className="text-xs text-destructive">
+                    <p key={error} className="-mt-4 text-xs text-destructive">
                       {error}
                     </p>
                   ) : null
