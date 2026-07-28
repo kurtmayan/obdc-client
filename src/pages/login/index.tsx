@@ -11,6 +11,7 @@ import { TriangleAlert } from "lucide-react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import type { ErrorResponse } from "@/types/error.type"
+import { validatePassword } from "@/lib/validatePasssword"
 
 type LoginType = {
   email: string
@@ -23,7 +24,10 @@ type LoginResponse = {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [errorMessage, setErrorMessage] = useState<boolean>(false)
+  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>(
+    "We couldn’t log you in. Please check your username or password and try again."
+  )
 
   const postLogin = useMutation<
     LoginResponse,
@@ -53,7 +57,7 @@ export default function LoginPage() {
       return data
     },
     onSuccess: (data, variables) => {
-      setErrorMessage(false)
+      setShowErrorMessage(false)
       if (data.message === "OTP Sent to email") {
         navigate("/auth/2fa", {
           state: {
@@ -73,7 +77,10 @@ export default function LoginPage() {
           return
         }
       }
-      setErrorMessage(true)
+      if (error.code === "ACCOUNT_LOCKED") {
+        setErrorMessage(error.message)
+      }
+      setShowErrorMessage(true)
     },
   })
 
@@ -115,13 +122,12 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {errorMessage && (
+      {showErrorMessage && (
         <div className="grid w-full max-w-md items-start gap-4">
           <Alert variant={"destructive"} className="bg-[#FFE1E2]">
             <TriangleAlert />
             <AlertDescription className="text-[#A8000F]">
-              We couldn’t log you in. Please check your username or password and
-              try again.
+              {errorMessage}
             </AlertDescription>
           </Alert>
         </div>
@@ -134,7 +140,8 @@ export default function LoginPage() {
             onBlur: ({ value }) => validateEmail(value),
             onSubmit: ({ value }) => validateEmail(value),
           }}
-          children={({ state, handleBlur, handleChange }) => (
+        >
+          {({ state, handleBlur, handleChange }) => (
             <>
               <FieldLabel htmlFor="email" className="-mb-5">
                 Email
@@ -149,24 +156,30 @@ export default function LoginPage() {
                 onChange={(e) => handleChange(e.target.value)}
                 disabled={form.state.isSubmitting}
               />
+              {state.meta.isTouched &&
+                state.meta.errors.map((error) =>
+                  error ? (
+                    <p key={error} className="text-xs text-destructive">
+                      {error}
+                    </p>
+                  ) : null
+                )}
             </>
           )}
-        />
+        </form.Field>
         <form.Field
           name="password"
           validators={{
-            onBlur: ({ value }) => {
-              if (!value) return "Password is required"
-              if (value.length < 6)
-                return "Password must be at least 6 characters"
-              return undefined
-            },
+            onBlur: ({ value }) => validatePassword(value),
+            onSubmit: ({ value }) => validatePassword(value),
           }}
-          children={({ state, handleBlur, handleChange }) => (
+        >
+          {({ state, handleBlur, handleChange }) => (
             <>
               <FieldLabel htmlFor="password" className="-mb-5">
                 Password
               </FieldLabel>
+
               <Input
                 id="password"
                 autoComplete="off"
@@ -178,9 +191,17 @@ export default function LoginPage() {
                 onChange={(e) => handleChange(e.target.value)}
                 disabled={form.state.isSubmitting}
               />
+              {state.meta.isTouched &&
+                state.meta.errors.map((error) =>
+                  error ? (
+                    <p key={error} className="-mt-4 text-xs text-destructive">
+                      {error}
+                    </p>
+                  ) : null
+                )}
             </>
           )}
-        />
+        </form.Field>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <FieldGroup className="w-auto">
             <form.Field
