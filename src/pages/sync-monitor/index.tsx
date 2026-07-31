@@ -8,7 +8,7 @@ import SyncMonitorTable from "./table"
 export default function SyncMonitor() {
   const { storeId } = useParams<{ storeId?: string }>()
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["stores"] })
+    queryClient.invalidateQueries({ queryKey: ["sync-monitor"] })
   }
 
   if (storeId) {

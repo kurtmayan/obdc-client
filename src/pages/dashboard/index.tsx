@@ -38,7 +38,6 @@ export default function Dashboard() {
           <p className="text-sm text-[#8A96A3]">Overview of all stores</p>
         </div>
       </div>
-
       <div className="grid grid-cols-3 gap-5">
         <StatsInfo
           title="Total Stores"
