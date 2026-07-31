@@ -35,7 +35,12 @@ export default function DetailedViewTable({
     queryKey: ["attendance", storeId, detailedId],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },

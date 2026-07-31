@@ -39,7 +39,12 @@ export default function SyncMonitorDetailedView() {
     queryKey: ["stores"],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },
@@ -53,7 +58,12 @@ export default function SyncMonitorDetailedView() {
     queryKey: ["sync-logs", storeId],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },
@@ -68,7 +78,12 @@ export default function SyncMonitorDetailedView() {
     queryKey: ["attendance", storeId, detailedId],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },
