@@ -76,7 +76,6 @@ export default function AppLayout() {
       return data
     },
     onSuccess: (e, variable) => {
-      e.token
       navigate(
         `/auth/update-password?type=expired&token=${encodeURIComponent(e.token)}&email=${variable.email}`
       )
