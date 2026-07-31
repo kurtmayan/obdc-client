@@ -75,6 +75,9 @@ export default function ManualDTRUpload() {
         {
           method: "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       )
       return response.json()
@@ -126,7 +129,6 @@ export default function ManualDTRUpload() {
 
       return null
     },
-
     onDrop: (acceptedFiles, fileRejections) => {
       if (fileRejections.length > 0) {
         toast.error(
@@ -142,72 +144,72 @@ export default function ManualDTRUpload() {
   })
 
   return (
-     <div className="flex flex-col gap-5">
-
-      {authData?.role === "MP" && <div className="relative flex h-20.5 justify-center bg-navy-blue">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute top-6 left-5 text-white hover:bg-white/10 hover:text-white"
-              aria-label="Open account menu"
-            >
-              <Menu className="size-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            showCloseButton={false}
-            className="w-80 max-w-[86vw] gap-0 overflow-hidden p-0"
-          >
-            <div className="relative bg-navy-blue px-5 pt-12 pb-6 text-white">
-              <SheetClose asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="absolute top-3 right-3 text-white hover:bg-white/10 hover:text-white"
-                  aria-label="Close account menu"
-                >
-                  <X className="size-4" />
-                </Button>
-              </SheetClose>
-              <SheetHeader className="p-0 text-left">
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-14 border border-white/20 bg-white/10">
-                    <AvatarFallback className="bg-[#FFC000] text-base font-semibold text-navy-blue">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <SheetTitle className="truncate text-lg font-semibold text-white">
-                      {fullName}
-                    </SheetTitle>
-                    <SheetDescription className="mt-1 text-xs font-medium tracking-wide text-white/65 uppercase">
-                      {userRole}
-                    </SheetDescription>
-                  </div>
-                </div>
-              </SheetHeader>
-            </div>
-
-            <div className="flex flex-1 flex-col px-5 py-5">
+    <div className="flex flex-col gap-5">
+      {authData?.role === "MP" && (
+        <div className="relative flex h-20.5 justify-center bg-navy-blue">
+          <Sheet>
+            <SheetTrigger asChild>
               <Button
-                variant="destructive"
-                className="mt-auto h-11 w-full gap-2 text-[15px] font-semibold"
-                onClick={handleLogout}
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-6 left-5 text-white hover:bg-white/10 hover:text-white"
+                aria-label="Open account menu"
               >
-                <LogOut className="size-4" />
-                Logout
+                <Menu className="size-6" />
               </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-        <img src="/app-logo.svg" className="h-28.5 w-29.75" />
-      </div>}
-      
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              showCloseButton={false}
+              className="w-80 max-w-[86vw] gap-0 overflow-hidden p-0"
+            >
+              <div className="relative bg-navy-blue px-5 pt-12 pb-6 text-white">
+                <SheetClose asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute top-3 right-3 text-white hover:bg-white/10 hover:text-white"
+                    aria-label="Close account menu"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </SheetClose>
+                <SheetHeader className="p-0 text-left">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-14 border border-white/20 bg-white/10">
+                      <AvatarFallback className="bg-[#FFC000] text-base font-semibold text-navy-blue">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <SheetTitle className="truncate text-lg font-semibold text-white">
+                        {fullName}
+                      </SheetTitle>
+                      <SheetDescription className="mt-1 text-xs font-medium tracking-wide text-white/65 uppercase">
+                        {userRole}
+                      </SheetDescription>
+                    </div>
+                  </div>
+                </SheetHeader>
+              </div>
+
+              <div className="flex flex-1 flex-col px-5 py-5">
+                <Button
+                  variant="destructive"
+                  className="mt-auto h-11 w-full gap-2 text-[15px] font-semibold"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="size-4" />
+                  Logout
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <img src="/app-logo.svg" className="h-28.5 w-29.75" />
+        </div>
+      )}
 
       <div className="flex flex-col items-center px-5">
         <div>
