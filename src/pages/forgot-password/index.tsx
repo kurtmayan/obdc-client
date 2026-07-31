@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
                 >
                   Email
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="h-11">
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
