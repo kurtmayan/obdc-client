@@ -1,3 +1,4 @@
+import usePushParams from "@/hooks/usePushParams"
 import { Field, FieldLabel } from "@/components/ui/field"
 import {
   SelectTrigger,
@@ -7,24 +8,34 @@ import {
   SelectItem,
   Select,
 } from "@/components/ui/select"
-import { useFilterStore } from "@/store"
+import { useSearchParams } from "react-router"
 
 export default function Division() {
-  const { setFilter } = useFilterStore()
+  const pushParams = usePushParams()
+  const [searchParams] = useSearchParams()
+  const value = searchParams.get("division") ?? "all"
+
   return (
-    <Field className="flex w-max flex-row">
+    <Field className="w-auto flex-none flex-row items-center gap-2">
       <FieldLabel
-        htmlFor="date-picker-range"
+        htmlFor="division-filter"
         className="text-xs font-medium whitespace-nowrap text-black/50"
       >
         Division:
       </FieldLabel>
       <Select
+        value={value}
         onValueChange={(value) =>
-          setFilter("division", value === "all" ? undefined : value)
+          pushParams({
+            division: value === "all" ? null : value,
+            page: "1",
+          })
         }
       >
-        <SelectTrigger className="w-full max-w-48 text-xs font-medium text-black/50">
+        <SelectTrigger
+          id="division-filter"
+          className="w-44 text-xs font-medium text-black/50"
+        >
           <SelectValue placeholder="All" />
         </SelectTrigger>
         <SelectContent>

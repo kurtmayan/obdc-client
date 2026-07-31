@@ -1,6 +1,7 @@
 import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import UsersIcon from "@/components/icons/users-icon"
+import DeviceIcon from "@/components/icons/device-icon"
 import type { ValidateTypeResponse } from "@/components/protected-route"
 import {
   AlertDialog,
@@ -22,7 +23,8 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
-import { addDays, compareAsc } from "date-fns"
+import { Store } from "lucide-react"
+import { addDays, compareAsc, differenceInDays } from "date-fns"
 import { toast } from "sonner"
 
 export default function AppLayout() {
@@ -93,6 +95,16 @@ export default function AppLayout() {
     { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
     { label: "User Management", url: "/user-management", icon: UsersIcon },
     { label: "DTR Upload", url: "/dtr-upload", icon: UsersIcon },
+    {
+      label: "Store Management",
+      url: "/store-management",
+      icon: Store,
+    },
+    {
+      label: "Device Management",
+      url: "/device-management",
+      icon: DeviceIcon,
+    },
   ]
 
   return (
@@ -138,7 +150,7 @@ export default function AppLayout() {
                     {authData?.firstName} {authData?.lastName}
                   </p>
                   <p className="text-left text-xs font-normal text-[#ffffff]/60">
-                    {authData?.role}
+                      {authData?.role}
                   </p>
                 </div>
               </div>
