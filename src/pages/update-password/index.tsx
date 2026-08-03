@@ -14,6 +14,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { Separator } from "@/components/ui/separator"
+import { validatePassword } from "@/lib/validatePasssword"
 import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
 import { useMutation } from "@tanstack/react-query"
@@ -22,11 +24,13 @@ import { useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 
-type UpdatePasswordType = {
+type UpdatePasswordTypes = {
   email: string
   token: string
   newPassword: string
 }
+
+type UpdatePasswordType = "forgot" | "expired"
 
 export default function UpdatePasswordPage() {
   const location = useLocation()
@@ -34,6 +38,9 @@ export default function UpdatePasswordPage() {
   const searchParams = new URLSearchParams(location.search)
 
   const userEmail = searchParams.get("email") ?? ""
+  const typeParam = searchParams.get("type")
+  const type: UpdatePasswordType =
+    typeParam === "expired" || typeParam === "forgot" ? typeParam : "forgot"
 
   const [passwordEye, setPasswordEye] = useState({
     newPassword: false,
@@ -45,7 +52,7 @@ export default function UpdatePasswordPage() {
       message: string
     },
     ErrorResponse,
-    UpdatePasswordType
+    UpdatePasswordTypes
   >({
     mutationFn: async (credentials) => {
       const response = await fetch(
@@ -102,18 +109,12 @@ export default function UpdatePasswordPage() {
     >
       <div className="absolute inset-0 bg-yellow-500/50" />
 
-      <Card className="z-10 w-94.25 p-5 text-center">
-        <CardHeader>
-          <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
-            Hi {userEmail}! <br />
-            Let’s update your password.
-          </CardTitle>
-          <CardDescription className="text-[#8A96A3]">
-            <p className="text-xs text-[#8A96A3]">
-              Update your password to continue using your account safely.
-            </p>
-          </CardDescription>
-        </CardHeader>
+      <Card className="z-10 w-94.25 p-6 text-center">
+        {type === "expired" ? (
+          <FormExpiredHeader />
+        ) : (
+          <FormForgotHeader email={userEmail} />
+        )}
         <CardContent className="flex flex-col items-center justify-center">
           {postUpdatePassword.isSuccess && (
             <Alert className="mb-5 border-none bg-[#D4FDE7]">
@@ -126,12 +127,7 @@ export default function UpdatePasswordPage() {
           <form.Field
             name="newPassword"
             validators={{
-              onChange: ({ value }) => {
-                if (!value) return "New password is required"
-                if (value.length < 6)
-                  return "Password must be at least 6 characters"
-                return undefined
-              },
+              onChange: ({ value }) => validatePassword(value),
               onBlur: ({ value }) => {
                 if (!value) return "New password is required"
                 if (value.length < 6)
@@ -148,13 +144,13 @@ export default function UpdatePasswordPage() {
                 >
                   New Password
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="mt-1 h-11">
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
                     type={passwordEye.newPassword ? "text" : "password"}
                     placeholder="Enter your new password"
-                    className="h-11 text-sm font-normal text-navy-blue placeholder:text-sm"
+                    className="text-sm font-normal text-navy-blue placeholder:text-sm"
                     onChange={(e) => field.handleChange(e.target.value)}
                     value={field.state.value}
                     onBlur={field.handleBlur}
@@ -175,7 +171,7 @@ export default function UpdatePasswordPage() {
                   </InputGroupAddon>
                 </InputGroup>
                 {field.state.meta.errors.length > 0 && (
-                  <p className="mt-1 self-start text-xs text-red-500">
+                  <p className="mt-1 self-start text-left text-xs text-red-500">
                     {field.state.meta.errors[0]}
                   </p>
                 )}
@@ -185,12 +181,7 @@ export default function UpdatePasswordPage() {
           <form.Field
             name="confirmNewPassword"
             validators={{
-              onChange: ({ value }) => {
-                if (!value) return "Confirm password is required"
-                if (value !== form.state.values.newPassword)
-                  return "Passwords do not match"
-                return undefined
-              },
+              onChange: ({ value }) => validatePassword(value),
               onBlur: ({ value }) => {
                 if (!value) return "Confirm password is required"
                 if (value !== form.state.values.newPassword)
@@ -207,13 +198,13 @@ export default function UpdatePasswordPage() {
                 >
                   Confirm New Password
                 </FieldLabel>
-                <InputGroup>
+                <InputGroup className="mt-1 h-11">
                   <InputGroupInput
                     id={field.name}
                     name={field.name}
                     type={passwordEye.confirmNewPassword ? "text" : "password"}
                     placeholder="Confirm your new password"
-                    className="h-11 text-sm font-normal text-navy-blue placeholder:text-sm"
+                    className="text-sm font-normal text-navy-blue placeholder:text-sm"
                     onChange={(e) => field.handleChange(e.target.value)}
                     value={field.state.value}
                     onBlur={field.handleBlur}
@@ -234,7 +225,7 @@ export default function UpdatePasswordPage() {
                   </InputGroupAddon>
                 </InputGroup>
                 {field.state.meta.errors.length > 0 && (
-                  <p className="mt-1 self-start text-xs text-red-500">
+                  <p className="mt-1 self-start text-left text-xs text-red-500">
                     {field.state.meta.errors[0]}
                   </p>
                 )}
@@ -266,8 +257,44 @@ export default function UpdatePasswordPage() {
               </Button>
             )}
           </form.Subscribe>
+          <Separator className="my-5" />
+          <p className="text-xs tracking-normal text-[#8A96A3]">
+            Mayan Solutions Inc.
+          </p>
         </CardFooter>
       </Card>
     </form>
+  )
+}
+
+function FormForgotHeader({ email }: { email: string }) {
+  return (
+    <CardHeader>
+      <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
+        Hi {email}! <br />
+        Let’s update your password.
+      </CardTitle>
+      <CardDescription className="text-[#8A96A3]">
+        <p className="text-xs text-[#8A96A3]">
+          Update your password to continue using your account safely.
+        </p>
+      </CardDescription>
+    </CardHeader>
+  )
+}
+
+function FormExpiredHeader() {
+  return (
+    <CardHeader>
+      <CardTitle className="text-[20px] font-bold text-[#5A2E15]">
+        Your password has expired
+      </CardTitle>
+      <CardDescription className="text-[#8A96A3]">
+        <p className="text-xs text-[#8A96A3]">
+          To keep your account secure and avoid being locked out, please update
+          your password now.
+        </p>
+      </CardDescription>
+    </CardHeader>
   )
 }

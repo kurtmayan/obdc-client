@@ -14,6 +14,8 @@ import UserManagement from "./pages/user-management"
 import ForgotPasswordPage from "./pages/forgot-password"
 import UpdatePasswordPage from "./pages/update-password"
 import ManualDTRUpload from "./pages/manual-dtr-upload"
+import StoreManagementPage from "./pages/store-management"
+import DeviceManagementPage from "./pages/device-management"
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +50,10 @@ export const router = createBrowserRouter([
         Component: ProtectedRoute,
         children: [
           {
+            path: "manual-dtr-upload",
+            Component: ManualDTRUpload,
+          },
+          {
             Component: AppLayout,
             children: [
               {
@@ -75,13 +81,21 @@ export const router = createBrowserRouter([
                 Component: UserManagement,
                 ErrorBoundary: Error,
               },
+              {
+                path: "dtr-upload",
+                Component: ManualDTRUpload,
+              },
+              {
+                path: "store-management",
+                Component: StoreManagementPage,
+              },
+              {
+                path: "device-management",
+                Component: DeviceManagementPage,
+              },
             ],
           },
         ],
-      },
-      {
-        path: "/manual-dtr-upload",
-        Component: ManualDTRUpload,
       },
     ],
   },

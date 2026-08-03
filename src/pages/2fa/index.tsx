@@ -1,3 +1,5 @@
+import type { ValidateTypeResponse } from "@/components/protected-route"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,8 +16,10 @@ import {
 } from "@/components/ui/input-otp"
 import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
+import { TriangleAlert } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
 
@@ -28,11 +32,45 @@ type OTPResponse = {
   accessToken: string
 }
 
+type ResendOTPType = {
+  email: string
+}
+
+type ResendOTPResponse = {
+  message: string
+  otpExpiresAt: string
+  resendAvailableAt: string
+}
+
+type OTPErrorResponse = ErrorResponse & {
+  code?: string
+  data?: {
+    remainingAttempts?: number
+    resendAvailableAt?: string
+  }
+}
+
+type TwoFALocationState = {
+  email: string
+  otpExpiresAt: string
+  resendAvailableAt: string
+}
+
 export default function TwoFactorAuthenticationPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const otpState = location.state as TwoFALocationState | null
+  const email = otpState?.email
+  const [resendAvailableAt, setResendAvailableAt] = useState<string | null>(
+    otpState?.resendAvailableAt ?? null
+  )
+  const [resendSeconds, setResendSeconds] = useState(0)
+  const [isAccountLocked, setIsAccountLocked] = useState(false)
+  const [accountLockedMessage, setAccountLockedMessage] = useState(
+    "Your account is locked. Please contact your administrator for assistance."
+  )
 
-  const postVerifyOtp = useMutation<OTPResponse, ErrorResponse, TwoFAType>({
+  const postVerifyOtp = useMutation<OTPResponse, OTPErrorResponse, TwoFAType>({
     mutationFn: async (credentials) => {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/verify-otp`,
@@ -53,31 +91,146 @@ export default function TwoFactorAuthenticationPage() {
     },
   })
 
+  const postResendOtp = useMutation<
+    ResendOTPResponse,
+    OTPErrorResponse,
+    ResendOTPType
+  >({
+    mutationFn: async (credentials) => {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/resend-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
+      )
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
+  const { refetch: refetchAuthData } = useQuery<ValidateTypeResponse>({
+    queryKey: ["auth"],
+    enabled: false,
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
+  useEffect(() => {
+    if (!email) {
+      navigate("/auth/login", { replace: true })
+    }
+  }, [email, navigate])
+
+  useEffect(() => {
+    const updateResendSeconds = () => {
+      if (!resendAvailableAt) {
+        setResendSeconds(0)
+        return
+      }
+
+      const resendAvailableAtTime = new Date(resendAvailableAt).getTime()
+      if (Number.isNaN(resendAvailableAtTime)) {
+        setResendSeconds(0)
+        return
+      }
+
+      const seconds = Math.max(
+        0,
+        Math.ceil((resendAvailableAtTime - Date.now()) / 1000)
+      )
+      setResendSeconds(seconds)
+    }
+
+    updateResendSeconds()
+    const interval = setInterval(updateResendSeconds, 1000)
+
+    return () => clearInterval(interval)
+  }, [resendAvailableAt])
+
   const form = useForm({
     defaultValues: {
       otp: "",
     },
     onSubmit: async ({ value }) => {
+      if (!email) {
+        return navigate("/auth/login", { replace: true })
+      }
+
       try {
-        console.log({
-          otp: value.otp,
-          email: location.state?.email,
-        })
         const data = await postVerifyOtp.mutateAsync({
           otp: value.otp,
-          email: location.state?.email,
+          email,
         })
         if (data.accessToken) {
           localStorage.setItem("token", data.accessToken)
-          return navigate("/")
+          const { data: freshAuthData } = await refetchAuthData()
+          return freshAuthData?.role === "MP"
+            ? navigate("/manual-dtr-upload")
+            : navigate("/")
         }
         return toast.error("Something went wrong")
       } catch (err) {
-        const error = err as ErrorResponse
+        const error = err as OTPErrorResponse
+        if (error.code === "ACCOUNT_LOCKED") {
+          setIsAccountLocked(true)
+          setAccountLockedMessage(error.message)
+        }
         return toast.error(error.message ?? "Something went wrong")
       }
     },
   })
+
+  const handleResendOtp = async () => {
+    if (!email) {
+      return navigate("/auth/login", { replace: true })
+    }
+
+    try {
+      const data = await postResendOtp.mutateAsync({ email })
+      form.setFieldValue("otp", "")
+      setResendAvailableAt(data.resendAvailableAt)
+      return toast.success(data.message)
+    } catch (err) {
+      const error = err as OTPErrorResponse
+
+      if (
+        error.code === "OTP_RESEND_COOLDOWN" &&
+        error.data?.resendAvailableAt
+      ) {
+        setResendAvailableAt(error.data.resendAvailableAt)
+      }
+
+      if (error.code === "ACCOUNT_LOCKED") {
+        setIsAccountLocked(true)
+        setAccountLockedMessage(error.message)
+      }
+
+      return toast.error(error.message ?? "Something went wrong")
+    }
+  }
 
   return (
     <form
@@ -105,16 +258,27 @@ export default function TwoFactorAuthenticationPage() {
             </p>
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center">
+        <CardContent className="flex flex-col items-center justify-center gap-5">
+          {isAccountLocked && (
+            <Alert variant={"destructive"} className="bg-[#FFE1E2] text-left">
+              <TriangleAlert />
+              <AlertDescription className="text-[#A8000F]">
+                {accountLockedMessage}
+              </AlertDescription>
+            </Alert>
+          )}
           <form.Field name="otp">
             {(field) => (
               <InputOTP
                 maxLength={6}
-                defaultValue=""
                 pattern={REGEXP_ONLY_DIGITS}
                 onChange={(e) => field.handleChange(e)}
                 value={field.state.value}
-                disabled={form.state.isSubmitting}
+                disabled={
+                  form.state.isSubmitting ||
+                  postResendOtp.isPending ||
+                  isAccountLocked
+                }
               >
                 <InputOTPGroup>
                   <InputOTPSlot
@@ -146,12 +310,45 @@ export default function TwoFactorAuthenticationPage() {
             )}
           </form.Field>
         </CardContent>
-        <CardFooter className="border-none bg-none shadow-none outline-none">
-          <Button
-            className="h-11 w-full text-[15px] font-semibold"
-            disabled={form.state.isSubmitting}
+        <CardFooter className="flex flex-col border-none bg-none shadow-none outline-none">
+          <form.Subscribe
+            selector={(state) => ({
+              isSubmitting: state.isSubmitting,
+              otp: state.values.otp,
+            })}
           >
-            Submit code
+            {({ isSubmitting, otp }) => (
+              <Button
+                className="h-11 w-full text-[15px] font-semibold"
+                disabled={
+                  isSubmitting ||
+                  postResendOtp.isPending ||
+                  isAccountLocked ||
+                  otp.length !== 6
+                }
+                type="submit"
+              >
+                Submit code
+              </Button>
+            )}
+          </form.Subscribe>
+          <Button
+            variant={"link"}
+            type="button"
+            onClick={handleResendOtp}
+            disabled={
+              resendSeconds > 0 ||
+              postResendOtp.isPending ||
+              isAccountLocked ||
+              !email
+            }
+            className="mt-2 text-[13px] font-medium text-navy-blue"
+          >
+            {postResendOtp.isPending
+              ? "Sending..."
+              : resendSeconds > 0
+                ? `Resend code in ${resendSeconds}s`
+                : "Resend code"}
           </Button>
         </CardFooter>
       </Card>

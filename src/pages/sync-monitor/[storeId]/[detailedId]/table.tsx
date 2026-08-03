@@ -4,13 +4,15 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { formatDate } from "date-fns/format"
 import TableData from "@/components/custom/table"
 
+import { formatInTimeZone } from "date-fns-tz"
+
 type AttendanceRecord = {
   id: string
   userId?: string
   employeeName: string
   createdAt: Date
   updatedAt: Date
-  logType: "timeIn" | "timeOut"
+  logType: number
   logDate: Date
   storeSyncRecordID: string
 }
@@ -33,7 +35,12 @@ export default function DetailedViewTable({
     queryKey: ["attendance", storeId, detailedId],
     queryFn: async () => {
       const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       )
       return res.json()
     },
@@ -65,23 +72,32 @@ export default function DetailedViewTable({
         ),
         cell: ({ row }) => (
           <p className="text-left text-sm font-semibold text-navy-blue">
-            {row.original.logType ? "Time Out" : "Time In"}
+            {row.original.logType == 0
+              ? "Time In"
+              : row.original.logType == 1
+                ? "Time Out"
+                : row.original.logType == 2
+                  ? "Undefined"
+                  : "Undefined"}
           </p>
         ),
       },
       {
         accessorKey: "logDate",
         header: "Date",
-        cell: ({ row }) => (
-          <div className="grid place-items-center">
-            <p className="text-sm font-medium text-navy-blue">
-              {formatDate(row.original.logDate, "hh:mm a")}
-            </p>
-            <p className="text-xs font-normal text-[#8A96A3]">
-              {formatDate(row.original.logDate, "MMMM d, yyyy")}
-            </p>
-          </div>
-        ),
+        cell: ({ row }) => {
+          return (
+            <div className="grid place-items-center">
+              <p className="text-sm font-medium text-navy-blue">
+                {formatInTimeZone(row.original.logDate, "UTC", "h:mm a")}
+              </p>
+
+              <p className="text-xs font-normal text-[#8A96A3]">
+                {formatDate(row.original.logDate, "MMMM d, yyyy")}
+              </p>
+            </div>
+          )
+        },
       },
     ],
     []

@@ -1,13 +1,17 @@
-import { useEffect, useMemo } from "react"
-import TableData from "@/components/custom/table"
-import type { Cluster, Division } from "@/types/sync.type"
+import DataTable from "@/components/custom/data-table"
+import Pagination from "@/components/custom/pagination"
+import SearchInput from "@/components/custom/search-input"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { api } from "@/lib/api"
+import { cn } from "@/lib/utils"
+import type { Cluster, Division, Store } from "@/types/sync.type"
 import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { format, formatDistanceToNow } from "date-fns"
-import { Link } from "react-router"
-import { useFilterStore } from "@/store/useSyncMonitor"
-import { Badge } from "@/components/ui/badge"
-import { CircleCheckBig } from "lucide-react"
+import { CircleAlert, CircleCheck, ClockFading, Loader } from "lucide-react"
+import { useMemo } from "react"
+import { Link, useSearchParams } from "react-router"
 
 const clusterMap: Record<Cluster, string> = {
   head_office: "Head Office",
@@ -28,50 +32,65 @@ const divisionMap: Record<Division, string> = {
   warehouse: "Warehouse",
 }
 
-type Store = {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  code: string
-  name: string
-  division: Division
-  location: string
-  cluster: Cluster
-  contactPerson: string
-  contactNumber: string
-  status: "ACTIVE" | "INACTIVE"
-  storeSyncRecords: StoreSyncRecord[]
-  devices: Device[]
+type SyncMonitorData = {
+  items: Store[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
 }
 
-type StoreSyncRecord = {
-  id: string
-  syncDate: Date
-  storesId: string
-}
-
-type Device = {
-  id: string
-  model: string
-  serialNumber: string
-  storesId: string
-  createdAt: Date
-  updatedAt: Date
+const EMPTY_SYNC_MONITOR_DATA: SyncMonitorData = {
+  items: [],
+  page: 1,
+  pageSize: 0,
+  totalItems: 0,
+  totalPages: 0,
 }
 
 export default function SyncMonitorTable() {
-  const { clearFilters } = useFilterStore()
+  const [searchParams] = useSearchParams()
+  const page = searchParams.get("page") ?? "1"
+  const pageSize = searchParams.get("pageSize") ?? "10"
+  const q = searchParams.get("q") ?? ""
+  const division = searchParams.get("division") ?? ""
+  const cluster = searchParams.get("cluster") ?? ""
+  const status = searchParams.get("status") ?? ""
+  const startDate = searchParams.get("startDate") ?? ""
+  const endDate = searchParams.get("endDate") ?? ""
 
-  const columnFilters = useFilterStore((s) => s.columnFilters)
-
-  const { data = [] } = useQuery<Store[]>({
-    queryKey: ["stores"],
+  const {
+    data = EMPTY_SYNC_MONITOR_DATA,
+    isLoading,
+    error,
+  } = useQuery<SyncMonitorData>({
+    queryKey: [
+      "sync-monitor",
+      page,
+      pageSize,
+      q,
+      division,
+      cluster,
+      status,
+      startDate,
+      endDate,
+    ],
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
-      )
-      return res.json()
+      const { data } = await api.get<SyncMonitorData>("/attendance/store", {
+        params: {
+          page,
+          pageSize,
+          q: q || undefined,
+          division: division || undefined,
+          cluster: cluster || undefined,
+          status: status || undefined,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        },
+      })
+      return data
     },
+    placeholderData: (prev) => prev,
   })
 
   const columns = useMemo<ColumnDef<Store>[]>(
@@ -100,9 +119,6 @@ export default function SyncMonitorTable() {
             {clusterMap[row.original.cluster]}
           </p>
         ),
-        filterFn: (row, _, filterValue) => {
-          return row.original.cluster === filterValue
-        },
       },
       {
         accessorKey: "division",
@@ -112,50 +128,74 @@ export default function SyncMonitorTable() {
             {divisionMap[row.original.division]}
           </p>
         ),
-        filterFn: (row, _, filterValue) => {
-          return row.original.division === filterValue
-        },
       },
       {
         accessorKey: "lastSync",
         header: "Last Sync",
-        cell: ({ row }) => (
-          <div className="text-center">
-            <p className="text-sm font-medium text-navy-blue">
-              {row.original.storeSyncRecords.length != 0 &&
-                format(
-                  new Date(row.original.storeSyncRecords[0]?.syncDate),
-                  "MMMM d, h:mm a"
-                )}
-            </p>
-            <p className="text-xs font-normal text-[#8A96A3]">
-              {row.original.storeSyncRecords.length != 0 &&
-                formatDistanceToNow(
-                  new Date(row.original.storeSyncRecords[0]?.syncDate),
-                  {
-                    addSuffix: true,
-                  }
-                )}
-            </p>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const record = row.original.storeSyncRecords?.[0]
+
+          if (!record) {
+            return <p className="text-sm text-[#8A96A3]">No sync yet</p>
+          }
+
+          const syncDate = new Date(record.syncDate)
+
+          return (
+            <div className="text-center">
+              <p className="text-sm font-medium text-navy-blue">
+                {format(syncDate, "MMMM d, h:mm a")}
+              </p>
+              <p className="text-xs font-normal text-[#8A96A3]">
+                {formatDistanceToNow(syncDate, { addSuffix: true })}
+              </p>
+            </div>
+          )
+        },
       },
       {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => {
-          return (
-            row.original.storeSyncRecords.length != 0 && (
-              <Badge className="bg-[#D4FDE7] text-xs font-semibold text-[#00662D]">
-                <CircleCheckBig color="#00662D" /> Synced
-              </Badge>
-            )
+          const record = row.original.storeSyncRecords?.[0]
+          if (!record) return <p className="text-sm text-[#8A96A3]">No sync</p>
+
+          const status = record.status
+          const success = status === "SUCCESS"
+          const failed = status === "FAILED"
+          const pending = status === "PENDING"
+          const processing = status === "PROCESSING"
+
+          const Icon = success
+            ? CircleCheck
+            : failed
+              ? CircleAlert
+              : pending
+                ? ClockFading
+                : processing
+                  ? Loader
+                  : CircleAlert
+
+          const className = cn(
+            "flex items-center gap-1 text-xs font-semibold",
+            success
+              ? "bg-[#D4FDE7] text-[#00662D]"
+              : failed
+                ? "bg-[#FFE1E2] text-[#A8000F]"
+                : pending
+                  ? "bg-[#FFF4D6] text-[#8A5A00]"
+                  : processing
+                    ? "bg-[#D9ECFF] text-[#0057B7]"
+                    : "text-black"
           )
-        },
-        filterFn: (row, _, filterValue) => {
+
           return (
-            (row.original.storeSyncRecords.length != 0) ===
-            (filterValue === "Synced")
+            <div className="flex justify-center">
+              <Badge className={className}>
+                <Icon className="h-3.5 w-3.5" />
+                {status}
+              </Badge>
+            </div>
           )
         },
       },
@@ -177,11 +217,19 @@ export default function SyncMonitorTable() {
     []
   )
 
-  useEffect(() => {
-    return () => clearFilters()
-  }, [clearFilters])
-
   return (
-    <TableData columns={columns} data={data} columnFilters={columnFilters} />
+    <div className="grid gap-6 p-6">
+      <div className="flex flex-row justify-end">
+        <SearchInput />
+      </div>
+      <DataTable
+        data={data.items}
+        columns={columns}
+        isLoading={isLoading}
+        error={error}
+      />
+      <Separator />
+      <Pagination page={data.page} total={data.totalItems} pageSize={data.pageSize} />
+    </div>
   )
 }
