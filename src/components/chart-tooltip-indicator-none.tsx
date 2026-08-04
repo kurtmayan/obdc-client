@@ -7,7 +7,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Button } from "./ui/button"
@@ -15,6 +15,7 @@ import { format, subDays } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { Calendar } from "./ui/calendar"
 import type { DateRange } from "react-day-picker"
+import ExportIcon from "./icons/export-icon"
 
 const chartConfig = {
   synced: {
@@ -40,6 +41,12 @@ type StatisticsDatasetsType = {
   date: Date
   pending: number
   synced: number
+}
+
+type ExportDataType = {
+  startDate: string
+  endDate: string
+  format: "xlsx" | "csv"
 }
 
 export function ChartTooltipIndicatorNone() {
@@ -76,6 +83,50 @@ export function ChartTooltipIndicatorNone() {
     },
   })
 
+  const exportStoreMutation = useMutation<Blob, Error, ExportDataType>({
+    mutationFn: async (data) => {
+      const params = new URLSearchParams({
+        startDate: data.startDate,
+        endDate: data.endDate,
+        format: data.format,
+      })
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/sync/store-status/export?${params.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(await response.text())
+      }
+
+      return response.blob()
+    },
+
+    onSuccess: (blob, variables) => {
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+
+      link.href = url
+      link.download = `store-status-export-${variables.startDate}_${variables.endDate}.${variables.format}`
+
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+      window.URL.revokeObjectURL(url)
+    },
+
+    onError: (error) => {
+      console.error(error.message || "Export failed")
+    },
+  })
+
   const maxTotal = Math.max(
     0,
     ...(dataStatistic?.map((d) => d.synced + d.pending) ?? [])
@@ -91,10 +142,10 @@ export function ChartTooltipIndicatorNone() {
       {/* Header */}
       <div className="mb-5 flex flex-row justify-between">
         <p className="text-[22px] font-bold">Sync Volume</p>
-        <div>
+        <div className="flex items-center justify-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant={"outline"}>
+              <Button variant={"outline"} className="h-8.75">
                 <span className="flex-1 text-left text-xs font-medium text-black/50">
                   {date?.from ? (
                     date.to ? (
@@ -121,6 +172,19 @@ export function ChartTooltipIndicatorNone() {
               />
             </PopoverContent>
           </Popover>
+          <Button
+            className="h-8.75 w-25"
+            onClick={() =>
+              exportStoreMutation.mutate({
+                startDate: date?.from ? format(date.from, "yyyy-MM-dd") : "",
+                endDate: date?.to ? format(date.to, "yyyy-MM-dd") : "",
+                format: "xlsx",
+              })
+            }
+          >
+            <ExportIcon height={18} width={18} />
+            <p className="text-xs font-semibold text-[#5A2E15]">Export</p>
+          </Button>
         </div>
       </div>
       <div>

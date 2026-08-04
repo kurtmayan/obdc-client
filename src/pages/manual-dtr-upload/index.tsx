@@ -280,21 +280,18 @@ export default function ManualDTRUpload() {
           </section>
 
           <form.Subscribe
-            selector={(state) => [
-              state.canSubmit,
-              state.isSubmitting,
-              !!state.values.file,
-            ]}
-            children={([canSubmit, isSubmitting, hasFile]) => (
+            selector={(state) => [state.canSubmit, !!state.values.file]}
+            children={([canSubmit, hasFile]) => (
               <Button
                 onClick={(e) => {
                   e.preventDefault()
                   form.handleSubmit()
                 }}
-                disabled={!canSubmit || isSubmitting || !hasFile}
+                disabled={!canSubmit || uploadDTRMutation.isPending || !hasFile}
                 className="mt-5 h-12 w-67.5 text-[15px] font-semibold text-[#1F1F1F]"
               >
-                <Upload /> {isSubmitting ? "Uploading..." : "Upload DTR"}
+                <Upload />{" "}
+                {uploadDTRMutation.isPending ? "Uploading..." : "Upload DTR"}
               </Button>
             )}
           />
