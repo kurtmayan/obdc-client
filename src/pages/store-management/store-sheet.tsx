@@ -24,6 +24,7 @@ import { useCreateStore } from "./actions"
 import { Switch } from "@/components/ui/switch"
 import type { Device } from "@/types/device"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
 
 type StoreCreateSheetProps = React.ComponentProps<typeof SheetPrimitive.Root>
 
@@ -119,13 +120,22 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
       try {
         if (storeId) {
           await editStore(payload)
+          toast.success("Store updated successfully!", {
+            position: "top-center",
+          })
         } else {
           await createStore(payload)
+          toast.success("Store created successfully!", {
+            position: "top-center",
+          })
         }
         setOpenSheet?.(false)
+        form.reset()
       } catch (err) {
-        // TODO: surface this to the user via toast/inline error
         console.error("Failed to save store:", err)
+        toast.error("Failed to save store. Please try again.", {
+          position: "top-center",
+        })
       }
     },
   })
