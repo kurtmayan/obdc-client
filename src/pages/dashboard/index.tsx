@@ -3,7 +3,9 @@ import StatsInfo from "./stats-info"
 import CorrectIcon from "@/components/icons/correct-icon"
 import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import ExportIcon from "@/components/icons/export-icon"
+import { Button } from "@/components/ui/button"
 
 type StatisticsType = {
   totalStores: number
