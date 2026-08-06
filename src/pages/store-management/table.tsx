@@ -12,6 +12,9 @@ import { useMemo } from "react"
 import { useSearchParams } from "react-router"
 import type { StoreInformation } from "./store-sheet"
 import CollapsibleContainer from "@/components/custom/colapsible-container"
+import type { Permissions } from "@/types/permission"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 export type StoreData = {
   items: StoreInformation[]
@@ -36,6 +39,27 @@ export default function StoreManagementTable() {
   const q = searchParams.get("q") ?? ""
   const { setStoreToEdit, setOpenSheet } = storeManagement()
   const { setSelectedIdToDelete, setOpenDelete } = storeManagement()
+
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
 
   const {
     data = EMPTY_STORE_DATA,
@@ -85,21 +109,26 @@ export default function StoreManagementTable() {
         header: "",
         cell: ({ row }) => (
           <div className="flex justify-center gap-3">
-            <Edit
-              className="size-4"
+            <Button
+              disabled={!permission?.storeManagement.canEdit}
+              variant={"ghost"}
               onClick={() => {
                 setStoreToEdit(row.original.id)
                 setOpenSheet(true)
-                console.log("asds")
               }}
-            />
-            <Ban
-              className="size-4"
+            >
+              <Edit className="size-4" />
+            </Button>
+            <Button
+              disabled={!permission?.storeManagement.canDisable}
+              variant={"ghost"}
               onClick={() => {
                 setSelectedIdToDelete(row.original.id)
                 setOpenDelete(true)
               }}
-            />
+            >
+              <Ban className={"size-4"} />
+            </Button>
           </div>
         ),
       },

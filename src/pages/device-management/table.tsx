@@ -1,6 +1,7 @@
 import DataTable from "@/components/custom/data-table"
 import Pagination from "@/components/custom/pagination"
 import SearchInput from "@/components/custom/search-input"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
 import { deviceManagement } from "@/store/device-management-page"
@@ -10,6 +11,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { Edit, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
+import type { Permissions } from "@/types/permission"
 
 export type DeviceData = {
   items: Device[]
@@ -45,6 +47,27 @@ export default function DeviceManagementTable() {
   const { setDeviceToEdit, setOpenSheet } = deviceManagement()
   const { setSelectedIdToDelete, setOpenDelete } = deviceManagement()
 
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
   const {
     data = EMPTY_DEVICE_DATA,
     isLoading,
@@ -74,20 +97,26 @@ export default function DeviceManagementTable() {
         header: "",
         cell: ({ row }) => (
           <div className="flex justify-center gap-3">
-            <Edit
-              className="size-4 cursor-pointer"
+            <Button
+              variant={"ghost"}
+              disabled={!permission?.deviceManagement.canUpdate}
               onClick={() => {
                 setDeviceToEdit(row.original.id)
                 setOpenSheet(true)
               }}
-            />
-            <Trash2
-              className="size-4 cursor-pointer"
+            >
+              <Edit className="size-4 cursor-pointer" />
+            </Button>
+            <Button
+              variant={"ghost"}
+              disabled={!permission?.deviceManagement.canDelete}
               onClick={() => {
                 setSelectedIdToDelete(row.original.id)
                 setOpenDelete(true)
               }}
-            />
+            >
+              <Trash2 className="size-4 cursor-pointer" />
+            </Button>
           </div>
         ),
       },
