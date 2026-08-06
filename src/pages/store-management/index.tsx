@@ -4,6 +4,8 @@ import StoreManagementTable from "./table"
 import { Plus } from "lucide-react"
 import { storeManagement } from "@/store/store-management-page"
 import StoreDeactivationNotice from "./store-deactivation-notice"
+import { useQuery } from "@tanstack/react-query"
+import type { Permissions } from "@/types/permission"
 
 export default function StoreManagementPage() {
   const { setOpenSheet, setStoreToEdit } = storeManagement()
@@ -12,6 +14,27 @@ export default function StoreManagementPage() {
     setStoreToEdit(null)
     setOpenSheet(true)
   }
+
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
 
   return (
     <div className="grid gap-3">
@@ -22,7 +45,11 @@ export default function StoreManagementPage() {
             Manage biometric devices and store assignments
           </p>
         </div>
-        <Button className="h-10.75 w-49.5" onClick={handleCreateNewStore}>
+        <Button
+          className="h-10.75 w-49.5"
+          onClick={handleCreateNewStore}
+          disabled={!permission?.storeManagement.canCreate}
+        >
           <Plus />
           Enroll New Store
         </Button>

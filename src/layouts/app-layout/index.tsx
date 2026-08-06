@@ -26,6 +26,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router"
 import { Store } from "lucide-react"
 import { addDays, compareAsc } from "date-fns"
 import { toast } from "sonner"
+import type { Permissions } from "@/types/permission"
 
 export default function AppLayout() {
   const { pathname } = useLocation()
@@ -48,6 +49,27 @@ export default function AppLayout() {
         throw data
       }
       console.log(data)
+      return data
+    },
+  })
+
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
       return data
     },
   })
@@ -91,21 +113,43 @@ export default function AppLayout() {
   }
 
   const navLinks = [
-    { label: "Dashboard", url: "/", icon: OverviewIcon },
-    { label: "Sync Monitor", url: "/sync-monitor", icon: SyncIcon },
-    { label: "User Management", url: "/user-management", icon: UsersIcon },
-    { label: "DTR Upload", url: "/dtr-upload", icon: UsersIcon },
+    {
+      label: "Dashboard",
+      url: "/",
+      icon: OverviewIcon,
+      canAccess: permission?.dashboard.canRead,
+    },
+    {
+      label: "Sync Monitor",
+      url: "/sync-monitor",
+      icon: SyncIcon,
+      canAccess: permission?.syncMonitor.canReadSync,
+    },
+    {
+      label: "User Management",
+      url: "/user-management",
+      icon: UsersIcon,
+      canAccess: permission?.userManagement.canRead,
+    },
+    {
+      label: "DTR Upload",
+      url: "/dtr-upload",
+      icon: UsersIcon,
+      canAccess: permission?.dtr.canUploadDtr,
+    },
     {
       label: "Store Management",
       url: "/store-management",
       icon: Store,
+      canAccess: permission?.storeManagement.canRead,
     },
     {
       label: "Device Management",
       url: "/device-management",
       icon: DeviceIcon,
+      canAccess: permission?.deviceManagement.canRead,
     },
-  ]
+  ].filter((link) => link.canAccess === true)
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
@@ -150,7 +194,7 @@ export default function AppLayout() {
                     {authData?.firstName} {authData?.lastName}
                   </p>
                   <p className="text-left text-xs font-normal text-[#ffffff]/60">
-                      {authData?.role}
+                    {authData?.role}
                   </p>
                 </div>
               </div>
