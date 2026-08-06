@@ -13,7 +13,6 @@ import { useSearchParams } from "react-router"
 import type { StoreInformation } from "./store-sheet"
 import CollapsibleContainer from "@/components/custom/colapsible-container"
 import type { Permissions } from "@/types/permission"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 export type StoreData = {
