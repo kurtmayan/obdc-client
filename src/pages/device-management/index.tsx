@@ -2,7 +2,7 @@ import { Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { deviceManagement } from "@/store/device-management-page"
-import DeviceDeleteNotice from "./device-delete-notice"
+import DeviceDeactivateNotice from "./device-deactivate-notice"
 import DeviceSheet from "./device-sheet"
 import DeviceManagementTable from "./table"
 import { useQuery } from "@tanstack/react-query"
@@ -59,7 +59,7 @@ export default function DeviceManagementPage() {
         <DeviceManagementTable />
       </div>
       <DeviceSheet />
-      <DeviceDeleteNotice />
+      <DeviceDeactivateNotice />
     </div>
   )
 }

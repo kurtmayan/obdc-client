@@ -21,7 +21,7 @@ export default function StoreDeactivationNotice() {
   const { setOpenDelete } = storeManagement()
   const { mutateAsync: deactivateStore } = useDeactivateStore()
 
-  const handleDisable = () => {
+  const handleDeactivate = () => {
     toast.promise(
       deactivateStore(storeIdToDelete as string).then((data) => {
         setOpenDelete(false)
@@ -29,8 +29,8 @@ export default function StoreDeactivationNotice() {
       }),
       {
         loading: "Deactivating store...",
-        success: "Store disabled successfully!",
-        error: "Store cannot be disabled!",
+        success: "Store deactivated successfully!",
+        error: "Store cannot be deactivated!",
         position: "top-center",
       }
     )
@@ -48,7 +48,7 @@ export default function StoreDeactivationNotice() {
           </DialogDescription>
         </DialogHeader>
         <Input
-          placeholder="Type 'disable' to disable "
+          placeholder="Type 'deactivate' to deactivate this store"
           onChange={(e) => setConfirmation(e.target.value)}
         />
         <DialogFooter>
@@ -56,10 +56,11 @@ export default function StoreDeactivationNotice() {
             <Button variant={"outline"}>Cancel</Button>
           </DialogClose>
           <Button
-            disabled={confirmation.toLowerCase() !== "disable"}
-            onClick={handleDisable}
+            variant={"destructive"}
+            disabled={confirmation.toLowerCase() !== "deactivate"}
+            onClick={handleDeactivate}
           >
-            Disable
+            Deactivate
           </Button>
         </DialogFooter>
       </DialogContent>
