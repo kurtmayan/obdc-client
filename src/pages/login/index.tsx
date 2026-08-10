@@ -58,6 +58,7 @@ export default function LoginPage() {
       }
       return data
     },
+    retry: false,
     onSuccess: (data, variables) => {
       setShowErrorMessage(false)
       if (data.message === "OTP Sent to email") {
@@ -94,8 +95,8 @@ export default function LoginPage() {
       password: "",
       rememberMe: false,
     },
-    onSubmit: ({ value }) => {
-      postLogin.mutate({
+    onSubmit: async ({ value }) => {
+      await postLogin.mutateAsync({
         email: value.email,
         password: value.password,
       })
@@ -108,7 +109,8 @@ export default function LoginPage() {
       onSubmit={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        form.handleSubmit()
+        if (postLogin.isPending) return
+        form.handleSubmit(e)
       }}
     >
       <img
@@ -158,7 +160,7 @@ export default function LoginPage() {
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
-                disabled={form.state.isSubmitting}
+                disabled={form.state.isSubmitting || postLogin.isPending}
               />
               {state.meta.isTouched &&
                 state.meta.errors.map((error) =>
@@ -193,7 +195,7 @@ export default function LoginPage() {
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
-                disabled={form.state.isSubmitting}
+                disabled={form.state.isSubmitting || postLogin.isPending}
               />
               {state.meta.isTouched &&
                 state.meta.errors.map((error) =>
@@ -241,8 +243,9 @@ export default function LoginPage() {
         </div>
         <Button
           size={"lg"}
+          type="submit"
           className="text-[16px] font-semibold"
-          disabled={form.state.isSubmitting}
+          disabled={form.state.isSubmitting || postLogin.isPending}
         >
           Sign In
         </Button>

@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { deviceManagement } from "@/store/device-management-page"
-import { useDeleteDevice } from "./actions"
+import { useDeactivateDevice } from "./actions"
 
-export default function DeviceDeleteNotice() {
+export default function DeviceDeactivateNotice() {
   const [confirmation, setConfirmation] = useState("")
   const deviceIdToDelete = deviceManagement((s) => s.selectedIdToDelete)
   const open = deviceManagement((s) => s.openDelete)
   const { setOpenDelete } = deviceManagement()
-  const { mutateAsync: deleteDevice } = useDeleteDevice()
+  const { mutateAsync: deleteDevice } = useDeactivateDevice()
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpenDelete(nextOpen)
@@ -30,7 +30,7 @@ export default function DeviceDeleteNotice() {
     }
   }
 
-  const handleDelete = () => {
+  const handleDeactivate = () => {
     if (!deviceIdToDelete) return
 
     toast.promise(
@@ -39,9 +39,9 @@ export default function DeviceDeleteNotice() {
         return data
       }),
       {
-        loading: "Deleting device...",
-        success: "Device deleted successfully!",
-        error: "Device cannot be deleted!",
+        loading: "Deactivating device...",
+        success: "Device deactivated successfully!",
+        error: "Device cannot be deactivated!",
         position: "top-center",
       }
     )
@@ -52,15 +52,15 @@ export default function DeviceDeleteNotice() {
       <DialogContent showCloseButton={false} className="w-83.5">
         <DialogHeader>
           <DialogTitle className="text-center text-[16px] font-bold">
-            Are you sure you want to delete this device?
+            Are you sure you want to deactivate this device?
           </DialogTitle>
           <DialogDescription className="mx-auto w-66.5 text-center text-xs">
-            This will permanently remove the device from management.
+            This will permanently deactivate the device from management.
           </DialogDescription>
         </DialogHeader>
 
         <Input
-          placeholder="Type 'delete' to delete"
+          placeholder="Type 'deactivate' to deactivate"
           value={confirmation}
           onChange={(e) => setConfirmation(e.target.value)}
         />
@@ -71,10 +71,10 @@ export default function DeviceDeleteNotice() {
           </DialogClose>
           <Button
             variant="destructive"
-            disabled={confirmation.toLowerCase() !== "delete"}
-            onClick={handleDelete}
+            disabled={confirmation.toLowerCase() !== "deactivate"}
+            onClick={handleDeactivate}
           >
-            Delete
+            Deactivate
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-
 import { api } from "@/lib/api"
 import type { CreateDeviceInfo, DeviceInformation } from "./device-sheet"
 
@@ -17,12 +16,12 @@ export function useCreateDevice() {
   })
 }
 
-export function useDeleteDevice() {
+export function useDeactivateDevice() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data } = await api.delete(`/device/${id}`)
+      const { data } = await api.patch(`/device/deactivate/${id}`)
       return data
     },
     onSuccess: () => {

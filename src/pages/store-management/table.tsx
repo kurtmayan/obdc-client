@@ -115,8 +115,9 @@ export default function StoreManagementTable() {
                 setStoreToEdit(row.original.id)
                 setOpenSheet(true)
               }}
+              className="cursor-pointer"
             >
-              <Edit className="size-4" />
+              <Edit className="size-4 text-[#FFC107]" />
             </Button>
             <Button
               disabled={!permission?.storeManagement.canDisable}
@@ -125,14 +126,21 @@ export default function StoreManagementTable() {
                 setSelectedIdToDelete(row.original.id)
                 setOpenDelete(true)
               }}
+              className="cursor-pointer"
             >
-              <Ban className={"size-4"} />
+              <Ban className={"size-4 text-[#FFC107]"} />
             </Button>
           </div>
         ),
       },
     ],
-    [setStoreToEdit, setOpenSheet, setSelectedIdToDelete, setOpenDelete]
+    [
+      setStoreToEdit,
+      setOpenSheet,
+      setSelectedIdToDelete,
+      setOpenDelete,
+      permission,
+    ]
   )
 
   return (

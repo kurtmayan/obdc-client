@@ -8,7 +8,7 @@ import { deviceManagement } from "@/store/device-management-page"
 import type { Device } from "@/types/device"
 import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
-import { Edit, Trash2 } from "lucide-react"
+import { Ban, Edit, Trash2 } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
 import type { Permissions } from "@/types/permission"
@@ -104,8 +104,9 @@ export default function DeviceManagementTable() {
                 setDeviceToEdit(row.original.id)
                 setOpenSheet(true)
               }}
+              className="cursor-pointer"
             >
-              <Edit className="size-4 cursor-pointer" />
+              <Edit className="size-4 cursor-pointer text-[#FFC107]" />
             </Button>
             <Button
               variant={"ghost"}
@@ -114,14 +115,21 @@ export default function DeviceManagementTable() {
                 setSelectedIdToDelete(row.original.id)
                 setOpenDelete(true)
               }}
+              className="cursor-pointer"
             >
-              <Trash2 className="size-4 cursor-pointer" />
+              <Ban className={"size-4 text-[#FFC107]"} />
             </Button>
           </div>
         ),
       },
     ],
-    [setDeviceToEdit, setOpenSheet, setSelectedIdToDelete, setOpenDelete]
+    [
+      setDeviceToEdit,
+      setOpenSheet,
+      setSelectedIdToDelete,
+      setOpenDelete,
+      permission,
+    ]
   )
 
   return (

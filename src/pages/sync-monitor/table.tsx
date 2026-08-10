@@ -229,7 +229,11 @@ export default function SyncMonitorTable() {
         error={error}
       />
       <Separator />
-      <Pagination page={data.page} total={data.totalItems} pageSize={data.pageSize} />
+      <Pagination
+        page={data.page}
+        total={data.totalItems}
+        pageSize={data.pageSize}
+      />
     </div>
   )
 }

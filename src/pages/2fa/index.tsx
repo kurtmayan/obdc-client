@@ -89,6 +89,7 @@ export default function TwoFactorAuthenticationPage() {
       }
       return data
     },
+    retry: false,
   })
 
   const postResendOtp = useMutation<
@@ -114,6 +115,7 @@ export default function TwoFactorAuthenticationPage() {
       }
       return data
     },
+    retry: false,
   })
 
   const { refetch: refetchAuthData } = useQuery<ValidateTypeResponse>({
