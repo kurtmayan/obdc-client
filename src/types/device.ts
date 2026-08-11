@@ -9,6 +9,7 @@ export type Device = {
   serialNumber: string
   model: string
   storesId: string
+  status?: "active" | "inactive"
   store?: DeviceStore | null
   stores?: DeviceStore | null
   createdAt?: string
