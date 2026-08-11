@@ -12,6 +12,7 @@ import { Ban, Edit } from "lucide-react"
 import { useMemo } from "react"
 import { useSearchParams } from "react-router"
 import type { Permissions } from "@/types/permission"
+import { Badge } from "@/components/ui/badge"
 
 export type DeviceData = {
   items: Device[]
@@ -91,6 +92,22 @@ export default function DeviceManagementTable() {
         id: "store",
         header: "Connected Store",
         cell: ({ row }) => getDeviceStoreName(row.original),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const status = row.original.status
+          const isActive = status == "active"
+          return (
+            <Badge
+              variant={isActive ? "success" : "failed"}
+              className="px-3.5 py-1.25 font-semibold capitalize"
+            >
+              {status}
+            </Badge>
+          )
+        },
       },
       {
         id: "actions",
