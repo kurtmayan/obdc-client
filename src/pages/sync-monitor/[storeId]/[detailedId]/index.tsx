@@ -23,6 +23,7 @@ import DetailedViewTable, { type StoreSyncRecordWithAttendance } from "./table"
 import { useTableSearch } from "@/store/useTableSearch"
 import { useEffect } from "react"
 import { api } from "@/lib/api"
+import Loading from "@/pages/loading"
 
 export default function SyncMonitorDetailedView() {
   const { setQuery } = useTableSearch()
@@ -82,7 +83,7 @@ export default function SyncMonitorDetailedView() {
   const isLoading = storeLoading || syncLoading || detailLoading
   const isError = storeError || syncError || detailError
 
-  if (isLoading) return <p>Loading....</p>
+  if (isLoading) return <Loading />
   if (isError || !store || !syncLog || !attendanceData)
     return <p>Error loading data</p>
 

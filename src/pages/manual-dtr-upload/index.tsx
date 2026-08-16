@@ -11,7 +11,7 @@ import {
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 import { useForm } from "@tanstack/react-form"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import {
   Sheet,
   SheetClose,
@@ -21,9 +21,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import type { ValidateTypeResponse } from "@/components/protected-route"
+import { useAuthQuery, useLogout } from "@/lib/auth"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useNavigate } from "react-router"
 
 const acceptedFileTypes = {
   "application/octet-stream": [".enc"],
@@ -31,27 +30,8 @@ const acceptedFileTypes = {
 }
 
 export default function ManualDTRUpload() {
-  const navigate = useNavigate()
-  const { data: authData } = useQuery<ValidateTypeResponse>({
-    queryKey: ["auth"],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) {
-        throw data
-      }
-      return data
-    },
-  })
+  const logout = useLogout()
+  const { data: authData } = useAuthQuery()
 
   const fullName =
     [authData?.firstName, authData?.lastName].filter(Boolean).join(" ") ||
@@ -60,11 +40,6 @@ export default function ManualDTRUpload() {
     `${authData?.firstName?.[0] ?? ""}${authData?.lastName?.[0] ?? ""}`.toUpperCase() ||
     "A"
   const userRole = authData?.role || "Role unavailable"
-
-  const handleLogout = () => {
-    localStorage.removeItem("token")
-    navigate("/auth/login")
-  }
 
   const uploadDTRMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -199,7 +174,7 @@ export default function ManualDTRUpload() {
                 <Button
                   variant="destructive"
                   className="mt-auto h-11 w-full gap-2 text-[15px] font-semibold"
-                  onClick={handleLogout}
+                  onClick={logout}
                 >
                   <LogOut className="size-4" />
                   Logout

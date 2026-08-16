@@ -1,61 +1,44 @@
-import { useQuery } from "@tanstack/react-query"
+import { useAuthQuery, usePermissionQuery } from "@/lib/auth"
+import {
+  MANUAL_DTR_UPLOAD_PATH,
+  canAccessPath,
+  getFirstAllowedPath,
+} from "@/lib/route-permissions"
+import Loading from "@/pages/loading"
+export type { ValidateTypeResponse } from "@/types/auth"
 import { Navigate, Outlet, useLocation } from "react-router"
-
-const MANUAL_DTR_UPLOAD_PATH = "/manual-dtr-upload"
-
-export type ValidateTypeResponse = {
-  sub: string
-  email: string
-  role: "SUPERADMIN" | "HR" | "MP"
-  firstName: string
-  lastName: string
-  middleName: string
-  iat: number
-  exp: number
-  lastPasswordUpdate: string
-}
 
 export default function ProtectedRoute() {
   const location = useLocation()
-  const { data, isLoading, isError } = useQuery<ValidateTypeResponse>({
-    queryKey: ["auth"],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) {
-        throw data
-      }
-      return data
-    },
-  })
+  const authQuery = useAuthQuery()
+  const permissionQuery = usePermissionQuery({ enabled: !!authQuery.data?.sub })
 
-  if (isLoading) {
-    return <div>Loading...</div>
+  if (authQuery.isLoading || permissionQuery.isLoading) {
+    return <Loading />
   }
 
-  if (isError || !data?.sub) {
+  if (authQuery.isError || !authQuery.data?.sub) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />
+  }
+
+  if (permissionQuery.isError || !permissionQuery.data) {
+    return <Navigate to="/forbidden" replace />
   }
 
   const currentPath = location.pathname.replace(/\/$/, "")
   const isManualDtrUploadPage = currentPath === MANUAL_DTR_UPLOAD_PATH
-  const isMP = data.role === "MP"
+  const isMP = authQuery.data.role === "MP"
 
   if (isMP && !isManualDtrUploadPage) {
     return <Navigate to={MANUAL_DTR_UPLOAD_PATH} replace />
   }
 
   if (!isMP && isManualDtrUploadPage) {
-    return <Navigate to="/" replace />
+    return <Navigate to={getFirstAllowedPath(permissionQuery.data)} replace />
+  }
+
+  if (!canAccessPath(location.pathname, permissionQuery.data)) {
+    return <Navigate to="/forbidden" replace />
   }
 
   return <Outlet />

@@ -1,4 +1,3 @@
-import type { ValidateTypeResponse } from "@/components/protected-route"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,12 +15,17 @@ import {
 } from "@/components/ui/input-otp"
 import type { ErrorResponse } from "@/types"
 import { useForm } from "@tanstack/react-form"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { TriangleAlert } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router"
 import { toast } from "sonner"
+import { clearSessionCache, fetchAuth, fetchPermissions } from "@/lib/auth"
+import {
+  getFirstAllowedPath,
+  MANUAL_DTR_UPLOAD_PATH,
+} from "@/lib/route-permissions"
 
 type TwoFAType = {
   otp: string
@@ -118,28 +122,6 @@ export default function TwoFactorAuthenticationPage() {
     retry: false,
   })
 
-  const { refetch: refetchAuthData } = useQuery<ValidateTypeResponse>({
-    queryKey: ["auth"],
-    enabled: false,
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) {
-        throw data
-      }
-      return data
-    },
-  })
-
   useEffect(() => {
     if (!email) {
       navigate("/auth/login", { replace: true })
@@ -187,11 +169,13 @@ export default function TwoFactorAuthenticationPage() {
           email,
         })
         if (data.accessToken) {
+          clearSessionCache()
           localStorage.setItem("token", data.accessToken)
-          const { data: freshAuthData } = await refetchAuthData()
-          return freshAuthData?.role === "MP"
-            ? navigate("/manual-dtr-upload")
-            : navigate("/")
+          const freshAuthData = await fetchAuth()
+          const freshPermissions = await fetchPermissions()
+          return freshAuthData.role === "MP"
+            ? navigate(MANUAL_DTR_UPLOAD_PATH)
+            : navigate(getFirstAllowedPath(freshPermissions))
         }
         return toast.error("Something went wrong")
       } catch (err) {

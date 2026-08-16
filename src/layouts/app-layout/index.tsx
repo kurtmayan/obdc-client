@@ -2,7 +2,6 @@ import OverviewIcon from "@/components/icons/overview-icon"
 import SyncIcon from "@/components/icons/sync-icon"
 import UsersIcon from "@/components/icons/users-icon"
 import DeviceIcon from "@/components/icons/device-icon"
-import type { ValidateTypeResponse } from "@/components/protected-route"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,58 +20,21 @@ import {
 } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useAuthQuery, useLogout, usePermissionQuery } from "@/lib/auth"
+import { appNavLinks } from "@/lib/route-permissions"
+import { useMutation } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useNavigate } from "react-router"
 import { Store } from "lucide-react"
 import { addDays, compareAsc } from "date-fns"
 import { toast } from "sonner"
-import type { Permissions } from "@/types/permission"
+import type { ComponentType, SVGProps } from "react"
 
 export default function AppLayout() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { data: authData } = useQuery<ValidateTypeResponse>({
-    queryKey: ["auth"],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/validate`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) {
-        throw data
-      }
-      console.log(data)
-      return data
-    },
-  })
-
-  const { data: permission } = useQuery<Permissions>({
-    queryKey: ["permission"],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
-      const data = await res.json()
-      if (!res.ok) {
-        throw data
-      }
-      return data
-    },
-  })
+  const logout = useLogout()
+  const { data: authData } = useAuthQuery()
+  const { data: permission } = usePermissionQuery()
 
   const sendPasswordUpdate = useMutation<
     { message: string; token: string },
@@ -112,44 +74,20 @@ export default function AppLayout() {
     )
   }
 
-  const navLinks = [
-    {
-      label: "Dashboard",
-      url: "/",
-      icon: OverviewIcon,
-      canAccess: permission?.dashboard.canRead,
-    },
-    {
-      label: "Sync Monitor",
-      url: "/sync-monitor",
-      icon: SyncIcon,
-      canAccess: permission?.syncMonitor.canReadSync,
-    },
-    {
-      label: "User Management",
-      url: "/user-management",
-      icon: UsersIcon,
-      canAccess: permission?.userManagement.canRead,
-    },
-    {
-      label: "DTR Upload",
-      url: "/dtr-upload",
-      icon: UsersIcon,
-      canAccess: permission?.dtr.canUploadDtr,
-    },
-    {
-      label: "Store Management",
-      url: "/store-management",
-      icon: Store,
-      canAccess: permission?.storeManagement.canRead,
-    },
-    {
-      label: "Device Management",
-      url: "/device-management",
-      icon: DeviceIcon,
-      canAccess: permission?.deviceManagement.canRead,
-    },
-  ].filter((link) => link.canAccess === true)
+  const navIcons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+    "/": OverviewIcon,
+    "/sync-monitor": SyncIcon,
+    "/user-management": UsersIcon,
+    "/dtr-upload": UsersIcon,
+    "/store-management": Store,
+    "/device-management": DeviceIcon,
+  }
+
+  const navLinks = permission
+    ? appNavLinks
+        .filter((link) => link.permission(permission))
+        .map((link) => ({ ...link, icon: navIcons[link.url] }))
+    : []
 
   return (
     <div className="flex h-screen flex-row overflow-hidden">
@@ -163,7 +101,8 @@ export default function AppLayout() {
         <div className="flex flex-col gap-3 px-3 py-6">
           {navLinks.map(({ url, label, icon }) => {
             const Icon = icon
-            const active = pathname == url
+            const active =
+              pathname === url || (url !== "/" && pathname.startsWith(`${url}/`))
             return (
               <Link to={url} key={url}>
                 <p
@@ -201,10 +140,7 @@ export default function AppLayout() {
             </PopoverTrigger>
             <PopoverContent align="start">
               <Button
-                onClick={() => {
-                  localStorage.removeItem("token")
-                  navigate("/auth/login")
-                }}
+                onClick={logout}
               >
                 Logout
               </Button>

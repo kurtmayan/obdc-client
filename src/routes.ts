@@ -16,12 +16,15 @@ import UpdatePasswordPage from "./pages/update-password"
 import ManualDTRUpload from "./pages/manual-dtr-upload"
 import StoreManagementPage from "./pages/store-management"
 import DeviceManagementPage from "./pages/device-management"
+import NotFound from "./pages/not-found"
+import Forbidden from "./pages/forbidden"
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
     children: [
+      { path: "forbidden", Component: Forbidden },
       {
         path: "auth",
         Component: AuthLayout,
@@ -96,6 +99,10 @@ export const router = createBrowserRouter([
             ],
           },
         ],
+      },
+      {
+        path: "*",
+        Component: NotFound,
       },
     ],
   },
