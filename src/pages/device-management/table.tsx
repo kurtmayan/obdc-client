@@ -4,6 +4,7 @@ import SearchInput from "@/components/custom/search-input"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
+import { parsePageParam, parsePageSizeParam } from "@/lib/pagination"
 import { deviceManagement } from "@/store/device-management-page"
 import type { Device } from "@/types/device"
 import { useQuery } from "@tanstack/react-query"
@@ -42,8 +43,8 @@ function getDeviceStoreName(device: Device) {
 
 export default function DeviceManagementTable() {
   const [searchParams] = useSearchParams()
-  const page = searchParams.get("page") ?? "1"
-  const pageSize = searchParams.get("pageSize") ?? "10"
+  const page = parsePageParam(searchParams.get("page"))
+  const pageSize = parsePageSizeParam(searchParams.get("pageSize"))
   const q = searchParams.get("q") ?? ""
   const { setDeviceToEdit, setOpenSheet } = deviceManagement()
   const { setSelectedIdToDelete, setOpenDelete } = deviceManagement()
@@ -72,6 +73,7 @@ export default function DeviceManagementTable() {
   const {
     data = EMPTY_DEVICE_DATA,
     isLoading,
+    isFetching,
     error,
   } = useQuery<DeviceData>({
     queryKey: ["device-management", page, q, pageSize],
@@ -82,6 +84,7 @@ export default function DeviceManagementTable() {
       return data
     },
     placeholderData: (prev) => prev,
+    staleTime: 0,
   })
 
   const columns = useMemo<ColumnDef<Device>[]>(
@@ -157,14 +160,14 @@ export default function DeviceManagementTable() {
       <DataTable
         data={data.items}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         error={error}
       />
       <Separator />
       <Pagination
-        page={data.page}
+        page={page}
         total={data.totalItems}
-        pageSize={data.pageSize}
+        pageSize={pageSize}
       />
     </div>
   )

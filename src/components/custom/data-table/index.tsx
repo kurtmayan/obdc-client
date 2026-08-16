@@ -12,6 +12,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table"
+import { Spinner } from "@/components/ui/spinner"
 
 type DataTableProps<T> = {
   data: T[]
@@ -56,7 +57,10 @@ export default function DataTable<T>({
             colSpan={visibleColumns}
             className="py-6 text-center text-xs font-bold"
           >
-            Loading...
+            <span className="inline-flex items-center justify-center gap-2">
+              <Spinner />
+              Loading...
+            </span>
           </TableCell>
         </TableRow>
       )

@@ -4,6 +4,7 @@ import SearchInput from "@/components/custom/search-input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
+import { parsePageParam, parsePageSizeParam } from "@/lib/pagination"
 import { cn } from "@/lib/utils"
 import type { Cluster, Division, Store } from "@/types/sync.type"
 import { useQuery } from "@tanstack/react-query"
@@ -50,8 +51,8 @@ const EMPTY_SYNC_MONITOR_DATA: SyncMonitorData = {
 
 export default function SyncMonitorTable() {
   const [searchParams] = useSearchParams()
-  const page = searchParams.get("page") ?? "1"
-  const pageSize = searchParams.get("pageSize") ?? "10"
+  const page = parsePageParam(searchParams.get("page"))
+  const pageSize = parsePageSizeParam(searchParams.get("pageSize"))
   const q = searchParams.get("q") ?? ""
   const division = searchParams.get("division") ?? ""
   const cluster = searchParams.get("cluster") ?? ""
@@ -62,6 +63,7 @@ export default function SyncMonitorTable() {
   const {
     data = EMPTY_SYNC_MONITOR_DATA,
     isLoading,
+    isFetching,
     error,
   } = useQuery<SyncMonitorData>({
     queryKey: [
@@ -91,6 +93,7 @@ export default function SyncMonitorTable() {
       return data
     },
     placeholderData: (prev) => prev,
+    staleTime: 0,
   })
 
   const columns = useMemo<ColumnDef<Store>[]>(
@@ -225,14 +228,14 @@ export default function SyncMonitorTable() {
       <DataTable
         data={data.items}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         error={error}
       />
       <Separator />
       <Pagination
-        page={data.page}
+        page={page}
         total={data.totalItems}
-        pageSize={data.pageSize}
+        pageSize={pageSize}
       />
     </div>
   )

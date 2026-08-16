@@ -4,6 +4,7 @@ import SearchInput from "@/components/custom/search-input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { api } from "@/lib/api"
+import { parsePageParam, parsePageSizeParam } from "@/lib/pagination"
 import { storeManagement } from "@/store/store-management-page"
 import { useQuery } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -33,8 +34,8 @@ const EMPTY_STORE_DATA: StoreData = {
 
 export default function StoreManagementTable() {
   const [searchParams] = useSearchParams()
-  const page = searchParams.get("page") ?? "1"
-  const pageSize = searchParams.get("pageSize") ?? "10"
+  const page = parsePageParam(searchParams.get("page"))
+  const pageSize = parsePageSizeParam(searchParams.get("pageSize"))
   const q = searchParams.get("q") ?? ""
   const { setStoreToEdit, setOpenSheet } = storeManagement()
   const { setSelectedIdToDelete, setOpenDelete } = storeManagement()
@@ -63,6 +64,7 @@ export default function StoreManagementTable() {
   const {
     data = EMPTY_STORE_DATA,
     isLoading,
+    isFetching,
     error,
   } = useQuery<StoreData>({
     queryKey: ["store-management", page, q, pageSize],
@@ -74,6 +76,7 @@ export default function StoreManagementTable() {
       return data
     },
     placeholderData: (prev) => prev,
+    staleTime: 0,
   })
 
   const columns = useMemo<ColumnDef<StoreInformation>[]>(
@@ -151,14 +154,14 @@ export default function StoreManagementTable() {
       <DataTable
         data={data.items}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         error={error}
       />
       <Separator />
       <Pagination
-        page={data.page}
+        page={page}
         total={data.totalItems}
-        pageSize={data.pageSize}
+        pageSize={pageSize}
       />
     </div>
   )
