@@ -1,7 +1,6 @@
 import StoreIcon from "@/components/icons/store-icon"
 import StatsInfo from "./stats-info"
 import CorrectIcon from "@/components/icons/correct-icon"
-import AlertIcon from "@/components/icons/alert-icon"
 import { ChartTooltipIndicatorNone } from "@/components/chart-tooltip-indicator-none"
 import { useQuery } from "@tanstack/react-query"
 
@@ -52,10 +51,10 @@ export default function Dashboard() {
           icon={<CorrectIcon />}
         />
         <StatsInfo
-          title="Unsynced Stores"
+          title="Synced Stores"
           value={`${dataStatistics?.totalUnsyncedStores || 0}`}
-          description="Number of unsycned stores."
-          icon={<AlertIcon />}
+          description="Number of sycned stores."
+          icon={<CorrectIcon />}
         />
       </div>
 
