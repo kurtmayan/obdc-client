@@ -7,8 +7,8 @@ import { useQuery } from "@tanstack/react-query"
 
 type StatisticsType = {
   totalStores: number
-  totalStoreSynced: number
-  totalStoreUnsynced: number
+  totalUnsyncedStores: number
+  activeStores: number
 }
 
 export default function Dashboard() {
@@ -46,15 +46,15 @@ export default function Dashboard() {
           icon={<StoreIcon />}
         />
         <StatsInfo
-          title="Stores Synced"
-          value={`${dataStatistics?.totalStoreSynced || 0}`}
-          description="Number of stores successfully synced"
+          title="Active Stores"
+          value={`${dataStatistics?.activeStores || 0}`}
+          description="Number of active stores"
           icon={<CorrectIcon />}
         />
         <StatsInfo
-          title="Stores Unsynced"
-          value={`${dataStatistics?.totalStoreUnsynced || 0}`}
-          description="Number of stores pending or failed sync"
+          title="Unsynced Stores"
+          value={`${dataStatistics?.totalUnsyncedStores || 0}`}
+          description="Number of unsycned stores."
           icon={<AlertIcon />}
         />
       </div>
