@@ -11,6 +11,7 @@ import { TriangleAlert } from "lucide-react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import type { ErrorResponse } from "@/types/error.type"
+import { validatePassword } from "@/lib/validatePasssword"
 
 type LoginType = {
   email: string
@@ -19,13 +20,27 @@ type LoginType = {
 
 type LoginResponse = {
   message: string
+  otpExpiresAt: string
+  resendAvailableAt: string
 }
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [errorMessage, setErrorMessage] = useState<boolean>(false)
+  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>(
+    "We couldn’t log you in. Please check your username or password and try again."
+  )
 
-  const postLogin = useMutation<LoginResponse, ErrorResponse, LoginType>({
+  const postLogin = useMutation<
+    LoginResponse,
+    ErrorResponse & {
+      code?: string
+      data?: {
+        token: string
+      }
+    },
+    LoginType
+  >({
     mutationFn: async (credentials) => {
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/login`,
@@ -43,6 +58,35 @@ export default function LoginPage() {
       }
       return data
     },
+    retry: false,
+    onSuccess: (data, variables) => {
+      setShowErrorMessage(false)
+      if (data.message === "OTP Sent to email") {
+        navigate("/auth/2fa", {
+          state: {
+            email: variables.email,
+            otpExpiresAt: data.otpExpiresAt,
+            resendAvailableAt: data.resendAvailableAt,
+          },
+        })
+      }
+    },
+    onError: (error, variables) => {
+      if (error.code === "PASSWORD_EXPIRED") {
+        if (error.data?.token) {
+          navigate(
+            `/auth/update-password?type=expired&token=${encodeURIComponent(error.data?.token)}&email=${encodeURIComponent(
+              variables.email
+            )}`
+          )
+          return
+        }
+      }
+      if (error.code === "ACCOUNT_LOCKED") {
+        setErrorMessage(error.message)
+      }
+      setShowErrorMessage(true)
+    },
   })
 
   const form = useForm({
@@ -51,25 +95,11 @@ export default function LoginPage() {
       password: "",
       rememberMe: false,
     },
-    onSubmit: async ({ value }: { value: LoginType }) => {
-      try {
-        setErrorMessage(false)
-        const data = await postLogin.mutateAsync({
-          email: value.email,
-          password: value.password,
-        })
-        if (data.message === "OTP Sent to email") {
-          return navigate("/auth/2fa", {
-            state: {
-              email: value.email,
-            },
-          })
-        }
-        return setErrorMessage(true)
-      } catch (err) {
-        console.log(err)
-        return setErrorMessage(true)
-      }
+    onSubmit: async ({ value }) => {
+      await postLogin.mutateAsync({
+        email: value.email,
+        password: value.password,
+      })
     },
   })
 
@@ -79,7 +109,8 @@ export default function LoginPage() {
       onSubmit={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        form.handleSubmit()
+        if (postLogin.isPending) return
+        form.handleSubmit(e)
       }}
     >
       <img
@@ -97,13 +128,12 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {errorMessage && (
+      {showErrorMessage && (
         <div className="grid w-full max-w-md items-start gap-4">
           <Alert variant={"destructive"} className="bg-[#FFE1E2]">
             <TriangleAlert />
             <AlertDescription className="text-[#A8000F]">
-              We couldn’t log you in. Please check your username or password and
-              try again.
+              {errorMessage}
             </AlertDescription>
           </Alert>
         </div>
@@ -116,7 +146,8 @@ export default function LoginPage() {
             onBlur: ({ value }) => validateEmail(value),
             onSubmit: ({ value }) => validateEmail(value),
           }}
-          children={({ state, handleBlur, handleChange }) => (
+        >
+          {({ state, handleBlur, handleChange }) => (
             <>
               <FieldLabel htmlFor="email" className="-mb-5">
                 Email
@@ -129,26 +160,32 @@ export default function LoginPage() {
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
-                disabled={form.state.isSubmitting}
+                disabled={form.state.isSubmitting || postLogin.isPending}
               />
+              {state.meta.isTouched &&
+                state.meta.errors.map((error) =>
+                  error ? (
+                    <p key={error} className="-mt-4 text-xs text-destructive">
+                      {error}
+                    </p>
+                  ) : null
+                )}
             </>
           )}
-        />
+        </form.Field>
         <form.Field
           name="password"
           validators={{
-            onBlur: ({ value }) => {
-              if (!value) return "Password is required"
-              if (value.length < 6)
-                return "Password must be at least 6 characters"
-              return undefined
-            },
+            onBlur: ({ value }) => validatePassword(value),
+            onSubmit: ({ value }) => validatePassword(value),
           }}
-          children={({ state, handleBlur, handleChange }) => (
+        >
+          {({ state, handleBlur, handleChange }) => (
             <>
               <FieldLabel htmlFor="password" className="-mb-5">
                 Password
               </FieldLabel>
+
               <Input
                 id="password"
                 autoComplete="off"
@@ -158,11 +195,19 @@ export default function LoginPage() {
                 value={state.value}
                 onBlur={handleBlur}
                 onChange={(e) => handleChange(e.target.value)}
-                disabled={form.state.isSubmitting}
+                disabled={form.state.isSubmitting || postLogin.isPending}
               />
+              {state.meta.isTouched &&
+                state.meta.errors.map((error) =>
+                  error ? (
+                    <p key={error} className="-mt-4 text-xs text-destructive">
+                      {error}
+                    </p>
+                  ) : null
+                )}
             </>
           )}
-        />
+        </form.Field>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <FieldGroup className="w-auto">
             <form.Field
@@ -181,7 +226,7 @@ export default function LoginPage() {
                   />
                   <FieldLabel
                     htmlFor="terms-checkbox-basic"
-                    className="whitespace-nowrap text-[13px] font-medium text-navy-blue"
+                    className="text-[13px] font-medium whitespace-nowrap text-navy-blue"
                   >
                     Remember me
                   </FieldLabel>
@@ -198,8 +243,9 @@ export default function LoginPage() {
         </div>
         <Button
           size={"lg"}
+          type="submit"
           className="text-[16px] font-semibold"
-          disabled={form.state.isSubmitting}
+          disabled={form.state.isSubmitting || postLogin.isPending}
         >
           Sign In
         </Button>

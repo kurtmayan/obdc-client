@@ -14,12 +14,17 @@ import UserManagement from "./pages/user-management"
 import ForgotPasswordPage from "./pages/forgot-password"
 import UpdatePasswordPage from "./pages/update-password"
 import ManualDTRUpload from "./pages/manual-dtr-upload"
+import StoreManagementPage from "./pages/store-management"
+import DeviceManagementPage from "./pages/device-management"
+import NotFound from "./pages/not-found"
+import Forbidden from "./pages/forbidden"
 
 export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
     children: [
+      { path: "forbidden", Component: Forbidden },
       {
         path: "auth",
         Component: AuthLayout,
@@ -83,9 +88,21 @@ export const router = createBrowserRouter([
                 path: "dtr-upload",
                 Component: ManualDTRUpload,
               },
+              {
+                path: "store-management",
+                Component: StoreManagementPage,
+              },
+              {
+                path: "device-management",
+                Component: DeviceManagementPage,
+              },
             ],
           },
         ],
+      },
+      {
+        path: "*",
+        Component: NotFound,
       },
     ],
   },

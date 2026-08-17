@@ -1,0 +1,168 @@
+import DataTable from "@/components/custom/data-table"
+import Pagination from "@/components/custom/pagination"
+import SearchInput from "@/components/custom/search-input"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { api } from "@/lib/api"
+import { parsePageParam, parsePageSizeParam } from "@/lib/pagination"
+import { storeManagement } from "@/store/store-management-page"
+import { useQuery } from "@tanstack/react-query"
+import type { ColumnDef } from "@tanstack/react-table"
+import { Ban, Edit } from "lucide-react"
+import { useMemo } from "react"
+import { useSearchParams } from "react-router"
+import type { StoreInformation } from "./store-sheet"
+import CollapsibleContainer from "@/components/custom/colapsible-container"
+import type { Permissions } from "@/types/permission"
+import { Button } from "@/components/ui/button"
+
+export type StoreData = {
+  items: StoreInformation[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
+}
+
+const EMPTY_STORE_DATA: StoreData = {
+  items: [],
+  page: 1,
+  pageSize: 0,
+  totalItems: 0,
+  totalPages: 0,
+}
+
+export default function StoreManagementTable() {
+  const [searchParams] = useSearchParams()
+  const page = parsePageParam(searchParams.get("page"))
+  const pageSize = parsePageSizeParam(searchParams.get("pageSize"))
+  const q = searchParams.get("q") ?? ""
+  const { setStoreToEdit, setOpenSheet } = storeManagement()
+  const { setSelectedIdToDelete, setOpenDelete } = storeManagement()
+
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
+
+  const {
+    data = EMPTY_STORE_DATA,
+    isLoading,
+    isFetching,
+    error,
+  } = useQuery<StoreData>({
+    queryKey: ["store-management", page, q, pageSize],
+    queryFn: async () => {
+      const { data } = await api.get<StoreData>("/store", {
+        params: { page, pageSize, q: q || undefined },
+      })
+      console.log(data)
+      return data
+    },
+    placeholderData: (prev) => prev,
+    staleTime: 0,
+  })
+
+  const columns = useMemo<ColumnDef<StoreInformation>[]>(
+    () => [
+      { accessorKey: "name", header: "Store Name" },
+      { accessorKey: "location", header: "Location" },
+      {
+        accessorKey: "devices",
+        header: "Assigned Devices",
+        cell: ({ row }) => (
+          <CollapsibleContainer items={row.original.devices} />
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const status = row.original.status
+          const isActive = status == "active"
+          return (
+            <Badge
+              variant={isActive ? "success" : "failed"}
+              className="px-3.5 py-1.25 font-semibold capitalize"
+            >
+              {status}
+            </Badge>
+          )
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <div className="flex justify-center gap-3">
+            <Button
+              disabled={!permission?.storeManagement.canEdit}
+              variant={"ghost"}
+              onClick={() => {
+                setStoreToEdit(row.original.id)
+                setOpenSheet(true)
+              }}
+              className="cursor-pointer"
+            >
+              <Edit className="size-4 text-[#FFC107]" />
+            </Button>
+            <Button
+              disabled={!permission?.storeManagement.canDisable}
+              variant={"ghost"}
+              onClick={() => {
+                setSelectedIdToDelete(row.original.id)
+                setOpenDelete(true)
+              }}
+              className="cursor-pointer"
+            >
+              <Ban className={"size-4 text-[#FFC107]"} />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [
+      setStoreToEdit,
+      setOpenSheet,
+      setSelectedIdToDelete,
+      setOpenDelete,
+      permission,
+    ]
+  )
+
+  return (
+    <div className="grid gap-6 p-6">
+      <div className="flex flex-row justify-end">
+        <SearchInput />
+      </div>
+      <DataTable
+        data={data.items}
+        columns={columns}
+        isLoading={isLoading || isFetching}
+        error={error}
+      />
+      <Separator />
+      <Pagination
+        page={page}
+        total={data.totalItems}
+        pageSize={pageSize}
+      />
+    </div>
+  )
+}

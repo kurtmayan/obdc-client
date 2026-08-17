@@ -23,9 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import type { ErrorResponse } from "@/types"
 import { toast } from "sonner"
+import type { Permissions } from "@/types/permission"
+import { cn } from "@/lib/utils"
 
 type InviteUserType = {
   firstName: string
@@ -41,6 +43,27 @@ type InviteUserResponse = {
 
 export default function InviteUser() {
   const [isOpen, setIsOpen] = useState(false)
+
+  const { data: permission } = useQuery<Permissions>({
+    queryKey: ["permission"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/permission`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) {
+        throw data
+      }
+      return data
+    },
+  })
 
   const postInviteUser = useMutation<
     InviteUserResponse,
@@ -95,7 +118,14 @@ export default function InviteUser() {
   })
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger className="flex h-10 w-[138.5px] items-center justify-center gap-2 rounded-[6px] bg-yellow-500 p-2 px-4">
+      <SheetTrigger
+        className={cn(
+          "flex h-10 w-[138.5px] items-center justify-center gap-2 rounded-[6px] bg-yellow-500 p-2 px-4",
+          !permission?.userManagement.canInvite &&
+            "cursor-not-allowed opacity-50"
+        )}
+        disabled={!permission?.userManagement.canInvite}
+      >
         <UserPlus />
         <p className="text-sm font-semibold text-navy-blue"> Invite User</p>
       </SheetTrigger>
@@ -165,13 +195,19 @@ export default function InviteUser() {
             />
             <form.Field
               name="role"
-              children={() => (
+              children={({ state, handleBlur, handleChange }) => (
                 <div className="mt-5">
                   <FieldLabel htmlFor="role" className="text-navy-blue">
                     Role
                   </FieldLabel>
-                  <Select disabled={form.state.isSubmitting}>
-                    <SelectTrigger className="h-11 w-full">
+                  <Select
+                    disabled={form.state.isSubmitting}
+                    value={state.value}
+                    onValueChange={(e: InviteUserType["role"]) =>
+                      handleChange(e)
+                    }
+                  >
+                    <SelectTrigger className="h-11 w-full" onBlur={handleBlur}>
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>

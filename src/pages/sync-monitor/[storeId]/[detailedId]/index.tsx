@@ -22,6 +22,8 @@ import type { Store } from "@/types/sync.type"
 import DetailedViewTable, { type StoreSyncRecordWithAttendance } from "./table"
 import { useTableSearch } from "@/store/useTableSearch"
 import { useEffect } from "react"
+import { api } from "@/lib/api"
+import Loading from "@/pages/loading"
 
 export default function SyncMonitorDetailedView() {
   const { setQuery } = useTableSearch()
@@ -32,17 +34,16 @@ export default function SyncMonitorDetailedView() {
   }>()
 
   const {
-    data: storeData,
+    data: store,
     isLoading: storeLoading,
     isError: storeError,
-  } = useQuery<Store[]>({
-    queryKey: ["stores"],
+  } = useQuery<Store>({
+    queryKey: ["store", storeId],
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store`
-      )
-      return res.json()
+      const { data } = await api.get<Store>(`/store/${storeId}`)
+      return data
     },
+    enabled: !!storeId,
   })
 
   const {
@@ -52,10 +53,8 @@ export default function SyncMonitorDetailedView() {
   } = useQuery<SyncLog[]>({
     queryKey: ["sync-logs", storeId],
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}`
-      )
-      return res.json()
+      const { data } = await api.get<SyncLog[]>(`/attendance/store/${storeId}`)
+      return data
     },
     enabled: !!storeId,
   })
@@ -67,15 +66,14 @@ export default function SyncMonitorDetailedView() {
   } = useQuery<StoreSyncRecordWithAttendance>({
     queryKey: ["attendance", storeId, detailedId],
     queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/attendance/store/${storeId}/${detailedId}`
+      const { data } = await api.get<StoreSyncRecordWithAttendance>(
+        `/attendance/store/${storeId}/${detailedId}`
       )
-      return res.json()
+      return data
     },
     enabled: !!storeId && !!detailedId,
   })
 
-  const store = storeData?.find((s) => s.id === storeId)
   const syncLog = syncLogData?.find((log) => log.id === detailedId)
 
   useEffect(() => {
@@ -85,13 +83,12 @@ export default function SyncMonitorDetailedView() {
   const isLoading = storeLoading || syncLoading || detailLoading
   const isError = storeError || syncError || detailError
 
-  if (isLoading) return <p>Loading....</p>
+  if (isLoading) return <Loading />
   if (isError || !store || !syncLog || !attendanceData)
     return <p>Error loading data</p>
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Breadcrumb */}
       <div className="bg-white px-6 py-5">
         <Breadcrumb>
           <BreadcrumbList>
@@ -112,14 +109,13 @@ export default function SyncMonitorDetailedView() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-black">
-                Logs for {format(syncLog.logDate, "MMMM d, yyyy")}
+                Logs for {format(new Date(syncLog.logDate), "MMMM d, yyyy")}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
 
-      {/* Store Info */}
       <div className="bg-white px-6 py-5">
         <h2 className="text-2xl font-medium">{store.name}</h2>
         <p className="text-xs font-normal text-[#8A96A3]">
@@ -144,12 +140,11 @@ export default function SyncMonitorDetailedView() {
         </div>
       </div>
 
-      {/* Attendance Records Table */}
       <div className="bg-white px-6 py-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-semibold text-nowrap text-[#1F1F1F]">
-              Logs for {format(syncLog.logDate, "MMMM d, yyyy")}
+              Logs for {format(new Date(syncLog.logDate), "MMMM d, yyyy")}
             </h1>
             <Badge className="bg-[#D4FDE7] text-[#00662D]">
               {attendanceData.attendanceRecord.length} /{" "}

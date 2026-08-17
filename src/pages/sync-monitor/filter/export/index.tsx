@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { CircleAlert, FileSpreadsheet, FileText, Hourglass } from "lucide-react"
 import { DatePickerWithRange } from "./date-range"
+import { StoreMultiSelect } from "./store-multi-select"
+import { EmployeeMultiSelect } from "./employee-multi-select"
 import type { DateRange } from "react-day-picker"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Spinner } from "@/components/ui/spinner"
@@ -32,11 +34,21 @@ export default function Export() {
       startDate: string
       endDate: string
       format: string
+      storeIds: string[]
+      employeeIds: string[]
     }) => {
       const params = new URLSearchParams()
       params.append("startDate", data.startDate)
       params.append("endDate", data.endDate)
       params.append("format", data.format)
+
+      if (data.storeIds.length > 0) {
+        params.append("storeIds", data.storeIds.join(","))
+      }
+
+      if (data.employeeIds.length > 0) {
+        params.append("employeeIds", data.employeeIds.join(","))
+      }
 
       const response = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/sync/export?${params.toString()}`
@@ -66,6 +78,8 @@ export default function Export() {
     defaultValues: {
       dateRange: undefined as DateRange | undefined,
       format: "",
+      storeIds: [] as string[],
+      employeeIds: [] as string[],
     },
     onSubmit: async ({ value }) => {
       const dateRange = value.dateRange
@@ -75,6 +89,8 @@ export default function Export() {
           startDate: formatLocalDate(dateRange.from),
           endDate: formatLocalDate(dateRange.to),
           format: value.format,
+          storeIds: value.storeIds,
+          employeeIds: value.employeeIds,
         })
       }
     },
@@ -187,7 +203,7 @@ export default function Export() {
               )}
             </div>
           </SheetHeader>
-          <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4 pb-4">
             <div className="grid gap-3">
               <form.Field
                 name="dateRange"
@@ -216,6 +232,48 @@ export default function Export() {
                           {field.state.meta.errors[0]}
                         </p>
                       )}
+                  </>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <form.Field
+                name="storeIds"
+                children={(field) => (
+                  <>
+                    <Label className="font-medium">Stores</Label>
+                    <StoreMultiSelect
+                      value={field.state.value}
+                      onChange={(storeIds) => {
+                        field.setValue(storeIds)
+                        form.setFieldValue("employeeIds", [])
+                      }}
+                      disabled={exportMutation.isPending}
+                    />
+                  </>
+                )}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <form.Field
+                name="employeeIds"
+                children={(field) => (
+                  <>
+                    <Label className="font-medium">Employees</Label>
+                    <form.Subscribe
+                      selector={(state) => state.values.storeIds}
+                    >
+                      {(storeIds) => (
+                        <EmployeeMultiSelect
+                          value={field.state.value}
+                          onChange={(employeeIds) => field.setValue(employeeIds)}
+                          storeIds={storeIds}
+                          disabled={exportMutation.isPending}
+                        />
+                      )}
+                    </form.Subscribe>
                   </>
                 )}
               />
