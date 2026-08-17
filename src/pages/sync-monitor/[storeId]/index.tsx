@@ -11,6 +11,7 @@ import type { Store } from "@/types/sync.type"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useParams } from "react-router"
 import StoreViewTable from "./table"
+import Loading from "@/pages/loading"
 
 export type SyncLog = {
   id: string
@@ -38,7 +39,7 @@ export default function SyncMonitorStoreView() {
     enabled: !!storeId,
   })
 
-  if (isLoading) return <p>Loading....</p>
+  if (isLoading) return <Loading />
   if (isError || !storeData) return <p>Error loading store data</p>
 
   const deviceModel = storeData.devices[0]?.model

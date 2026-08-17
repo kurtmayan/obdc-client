@@ -1,6 +1,6 @@
 import SelectInput from "@/components/custom/select"
 import { Button } from "@/components/ui/button"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   Sheet,
@@ -183,6 +183,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
+                    disabled={storeId ? true : false}
                   />
                 </Field>
               )}
@@ -200,6 +201,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
                       field.handleChange(e.target.value.toUpperCase())
                     }
                     onBlur={field.handleBlur}
+                    disabled={storeId ? true : false}
                   />
                 </Field>
               )}
@@ -216,6 +218,7 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
+                  disabled={storeId ? true : false}
                 />
               </Field>
             )}
@@ -265,6 +268,17 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
           />
           <form.Field
             name="contactNumber"
+            validators={{
+              onChange: ({ value }) => {
+                const phoneRegex = /^(09\d{9}|\+639\d{9})$/
+
+                if (!phoneRegex.test(value)) {
+                  return "Enter a valid PH mobile number (09XXXXXXXXX or +639XXXXXXXXX)"
+                }
+
+                return undefined
+              },
+            }}
             children={(field) => (
               <Field>
                 <FieldLabel>Contact Number</FieldLabel>
@@ -274,6 +288,9 @@ export default function StoreCreateSheet({ ...props }: StoreCreateSheetProps) {
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                 />
+                {field.state.meta.errors.length > 0 && (
+                  <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                )}
               </Field>
             )}
           />

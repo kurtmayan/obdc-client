@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button"
+import PageSizeSelect from "@/components/custom/page-size-select"
 import usePushParams from "@/hooks/usePushParams"
+import { parsePageParam, parsePageSizeParam } from "@/lib/pagination"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 type PaginationProps = {
@@ -10,12 +12,14 @@ type PaginationProps = {
 
 export default function Pagination({ page, pageSize, total }: PaginationProps) {
   const pushParams = usePushParams()
+  const normalizedPage = parsePageParam(String(page))
+  const normalizedPageSize = parsePageSizeParam(String(pageSize))
 
-  const totalPages = pageSize > 0 ? Math.ceil(total / pageSize) : 0
-  const currentPage = Math.min(Math.max(page, 1), Math.max(totalPages, 1))
+  const totalPages = Math.ceil(total / normalizedPageSize)
+  const currentPage = Math.min(Math.max(normalizedPage, 1), Math.max(totalPages, 1))
 
-  const startItem = total === 0 ? 0 : (currentPage - 1) * pageSize + 1
-  const endItem = Math.min(currentPage * pageSize, total)
+  const startItem = total === 0 ? 0 : (currentPage - 1) * normalizedPageSize + 1
+  const endItem = Math.min(currentPage * normalizedPageSize, total)
 
   const pageInformation = `Showing ${startItem}-${endItem} of ${total} items`
 
@@ -29,7 +33,10 @@ export default function Pagination({ page, pageSize, total }: PaginationProps) {
 
   return (
     <div className="flex w-full items-center justify-between gap-4">
-      <p className="text-sm text-muted-foreground">{pageInformation}</p>
+      <div className="flex items-center gap-3">
+        <p className="text-sm text-muted-foreground">{pageInformation}</p>
+        <PageSizeSelect value={normalizedPageSize} />
+      </div>
 
       {totalPages > 1 && (
         <div className="flex flex-row items-center gap-2">
